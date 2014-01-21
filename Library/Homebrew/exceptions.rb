@@ -122,7 +122,7 @@ class IncompatibleCxxStdlibs < Homebrew::InstallationError
     to build #{f}: #{right.type_string} (from #{right.compiler})
 
     Please reinstall #{dep} using a compatible compiler.
-    hint: Check https://github.com/mxcl/homebrew/wiki/C++-Standard-Libraries
+    hint: Check https://github.com/Homebrew/homebrew/wiki/C++-Standard-Libraries
     EOS
   end
 end
@@ -185,7 +185,7 @@ class BuildError < Homebrew::InstallationError
       if formula.tap?
         user, repo = formula.tap.split '/'
         tap_issues_url = "https://github.com/#{user}/homebrew-#{repo}/issues"
-        puts "If reporting this issue please do so at (not mxcl/homebrew):"
+        puts "If reporting this issue please do so at (not Homebrew/homebrew):"
         puts "  #{tap_issues_url}"
       end
     else
@@ -211,7 +211,7 @@ class BuildError < Homebrew::InstallationError
     puts
     unless RUBY_VERSION < "1.8.6" || issues.empty?
       puts "These open issues may also help:"
-      puts issues.map{ |s| "    #{s}" }.join("\n")
+      puts issues.map{ |i| "#{i['title']} (#{i['html_url']})" }.join("\n")
     end
   end
 end
@@ -226,11 +226,6 @@ class CompilerSelectionError < Homebrew::InstallationError
       brew install apple-gcc42
     EOS
   end
-end
-
-# raised in install_tap
-class AlreadyTappedError < RuntimeError
-  def initialize; super "Already tapped!" end
 end
 
 # raised in CurlDownloadStrategy.fetch

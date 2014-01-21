@@ -6,8 +6,8 @@ class Mariadb < Formula
   sha1 '8a7d8f6094faa35cc22bc084a0e0d8037fd4ba03'
 
   devel do
-    url 'http://ftp.osuosl.org/pub/mariadb/mariadb-10.0.6/kvm-tarbake-jaunty-x86/mariadb-10.0.6.tar.gz'
-    sha1 '320722a5bdea2c23743bf08deb642c430f6ce5e3'
+    url 'http://ftp.osuosl.org/pub/mariadb/mariadb-10.0.7/kvm-tarbake-jaunty-x86/mariadb-10.0.7.tar.gz'
+    sha1 '14d830cf322175a3fc772e3b265faca1246a7b07'
   end
 
   depends_on 'cmake' => :build
@@ -34,18 +34,14 @@ class Mariadb < Formula
       [
         # Prevent name collision leading to compilation failure. See:
         # issue #24489, upstream: https://mariadb.atlassian.net/browse/MDEV-5314
-        'https://gist.github.com/makigumo/7735363/raw/e7b1bc368dbf0517ccae64947e4ef9d5fa00f51c/mariadb-10.0.6.mac.patch',
-        # Cherry-picked from upstream.
-        # http://bazaar.launchpad.net/~maria-captains/maria/10.0-base/revision/3941#support-files/CMakeLists.txt
-        # Resolved in 10.0.7, see: https://mariadb.atlassian.net/browse/MDEV-5314
-        'https://gist.github.com/makigumo/7735363/raw/d7f475d7937f51d7d18c35dd3dd424d74f0284f3/mariadb-10.0.6.mac.2.patch'
+        'https://gist.github.com/makigumo/8199195/raw/ab0bc78fd0e839aafcf072505f017feba2b6f6fa/mariadb-10.0.7.mac.patch',
       ]
     end
   end
 
   def install
     # Don't hard-code the libtool path. See:
-    # https://github.com/mxcl/homebrew/issues/20185
+    # https://github.com/Homebrew/homebrew/issues/20185
     inreplace "cmake/libutils.cmake",
       "COMMAND /usr/bin/libtool -static -o ${TARGET_LOCATION}",
       "COMMAND libtool -static -o ${TARGET_LOCATION}"
@@ -109,7 +105,7 @@ class Mariadb < Formula
 
     unless build.include? 'client-only'
       # Don't create databases inside of the prefix!
-      # See: https://github.com/mxcl/homebrew/issues/4975
+      # See: https://github.com/Homebrew/homebrew/issues/4975
       rm_rf prefix+'data'
 
       (prefix+'mysql-test').rmtree unless build.with? 'tests' # save 121MB!
@@ -172,11 +168,5 @@ class Mariadb < Formula
     </dict>
     </plist>
     EOS
-  end
-
-  test do
-    (prefix+'mysql-test').cd do
-      system './mysql-test-run.pl', 'status'
-    end
   end
 end

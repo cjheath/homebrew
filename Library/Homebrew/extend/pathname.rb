@@ -383,6 +383,27 @@ class Pathname
     end
   end
 
+  # Writes an exec script that sets environment variables
+  def write_env_script target, env
+    env_export = ''
+    env.each {|key, value| env_export += "#{key}=\"#{value}\" "}
+    self.write <<-EOS.undent
+    #!/bin/bash
+    #{env_export}exec "#{target}" "$@"
+    EOS
+  end
+
+  # Writes a wrapper env script and moves all files to the dst
+  def env_script_all_files dst, env
+    dst.mkpath
+    Dir["#{self}/*"].each do |file|
+      file = Pathname.new(file)
+      dst.install_p file
+      new_file = dst+file.basename
+      file.write_env_script(new_file, env)
+    end
+  end
+
   # Writes an exec script that invokes a java jar
   def write_jar_script target_jar, script_name, java_opts=""
     (self+script_name).write <<-EOS.undent
@@ -408,17 +429,6 @@ class Pathname
       next unless filename.exist?
       filename.chmod 0644
       self.install filename
-    end
-  end
-
-  # Returns an array containing all dynamically-linked libraries, based on the
-  # output of otool. This returns the install names, so these are not guaranteed
-  # to be absolute paths.
-  # Returns an empty array both for software that links against no libraries,
-  # and for non-mach objects.
-  def dynamically_linked_libraries
-    `#{MacOS.locate("otool")} -L "#{expand_path}"`.chomp.split("\n")[1..-1].map do |line|
-      line[/\t(.+) \([^(]+\)/, 1]
     end
   end
 

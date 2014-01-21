@@ -19,7 +19,7 @@ end
 
 ARGV.named.each do|arg|
   if arg.to_i > 0
-    url = 'https://github.com/mxcl/homebrew/pull/' + arg
+    url = 'https://github.com/Homebrew/homebrew/pull/' + arg
   else
     url_match = arg.match HOMEBREW_PULL_OR_COMMIT_URL_REGEX
     unless url_match
@@ -40,7 +40,7 @@ ARGV.named.each do|arg|
 
   if ARGV.include? '--bottle'
     raise 'No pull request detected!' unless issue
-    url = "https://github.com/BrewTestBot/homebrew/compare/mxcl:master...pr-#{issue}"
+    url = "https://github.com/BrewTestBot/homebrew/compare/homebrew:master...pr-#{issue}"
   end
 
   # GitHub provides commits'/pull-requests' raw patches using this URL.
