@@ -137,7 +137,6 @@ def curl *args
   raise "#{curl} is not executable" unless curl.exist? and curl.executable?
 
   args = [HOMEBREW_CURL_ARGS, HOMEBREW_USER_AGENT, *args]
-<<<<<<< HEAD
 
   if insecure = ENV['CURLOPT_SSL_VERIFYPEER']
     insecure = true if %w{no false}.include? insecure
