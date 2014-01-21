@@ -27,6 +27,12 @@ class Curl < Formula
       --prefix=#{prefix}
     ]
 
+    if insecure = ENV['CURLOPT_SSL_VERIFYPEER']
+      insecure = true if %w{no false}.include? insecure
+      puts "Performing INSECURE download" if insecure
+    end
+
+    args << "--insecure" if insecure
     args << "--with-libssh2" if build.with? 'ssh'
     args << "--with-libmetalink" if build.with? 'libmetalink'
     args << "--enable-ares=#{Formula.factory("c-ares").opt_prefix}" if build.with? 'ares'

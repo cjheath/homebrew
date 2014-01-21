@@ -137,8 +137,14 @@ def curl *args
   raise "#{curl} is not executable" unless curl.exist? and curl.executable?
 
   args = [HOMEBREW_CURL_ARGS, HOMEBREW_USER_AGENT, *args]
+
+  if insecure = ENV['CURLOPT_SSL_VERIFYPEER']
+    insecure = true if %w{no false}.include? insecure
+    puts "Performing INSECURE download" if insecure
+  end
+
   # See https://github.com/mxcl/homebrew/issues/6103
-  args << "--insecure" if MacOS.version < "10.6"
+  args << "--insecure" if MacOS.version < "10.6" || insecure
   args << "--verbose" if ENV['HOMEBREW_CURL_VERBOSE']
   args << "--silent" unless $stdout.tty?
 
