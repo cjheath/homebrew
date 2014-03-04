@@ -319,7 +319,7 @@ class FormulaInstaller
     if f.keg_only?
       begin
         Keg.new(f.prefix).optlink
-      rescue Exception
+      rescue Exception => e
         onoe "Failed to create: #{f.opt_prefix}"
         puts "Things that depend on #{f} will probably not build."
       end
@@ -397,6 +397,7 @@ class FormulaInstaller
         read.close
         exec(*args)
       rescue Exception => e
+	#$stderr.puts "#{e}:\n\t"+e.backtrace*"\n\t"
         Marshal.dump(e, write)
         write.close
         exit! 1
@@ -415,7 +416,7 @@ class FormulaInstaller
 
     raise "Empty installation" if Dir["#{f.prefix}/*"].empty?
 
-  rescue Exception
+  rescue Exception => e
     ignore_interrupts do
       # any exceptions must leave us with nothing installed
       f.prefix.rmtree if f.prefix.directory?
