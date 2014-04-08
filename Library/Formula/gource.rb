@@ -2,7 +2,7 @@ require 'formula'
 
 class Gource < Formula
   homepage 'http://code.google.com/p/gource/'
-  url 'http://gource.googlecode.com/files/gource-0.40.tar.gz'
+  url 'https://gource.googlecode.com/files/gource-0.40.tar.gz'
   sha1 '7af594f84c0ec4c84278a8e9008f83a7a02e97fa'
 
   head do
@@ -13,7 +13,7 @@ class Gource < Formula
     depends_on :libtool
   end
 
-  depends_on :x11 if MacOS::X11.installed?
+  depends_on :x11 => :optional
   depends_on :freetype
 
   depends_on 'pkg-config' => :build

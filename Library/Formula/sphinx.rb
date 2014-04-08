@@ -2,8 +2,8 @@ require 'formula'
 
 class Sphinx < Formula
   homepage 'http://www.sphinxsearch.com'
-  url 'http://sphinxsearch.com/files/sphinx-2.1.4-release.tar.gz'
-  sha1 '072e4f813937e2d65145b272494185a73a3bc8e0'
+  url 'http://sphinxsearch.com/files/sphinx-2.1.6-release.tar.gz'
+  sha1 'fe4dfc605afe8f58d9e25fd0c58dfed1673ec4b1'
 
   head 'http://sphinxsearch.googlecode.com/svn/trunk/'
 
@@ -22,7 +22,7 @@ class Sphinx < Formula
   # http://snowball.tartarus.org/
   resource 'stemmer' do
     url 'http://snowball.tartarus.org/dist/libstemmer_c.tgz'
-    sha1 '69056075b9fa1382e07cec6c32c8e82f3f35677b'
+    sha1 'bbe1ba5bbebb146575a575b8ca3342aa3b91bf93'
   end
 
   fails_with :llvm do
