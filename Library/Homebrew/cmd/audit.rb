@@ -162,7 +162,7 @@ class FormulaAuditor
       when *BUILD_TIME_DEPS
         next if dep.build? or dep.run?
         problem %{#{dep} dependency should be "depends_on '#{dep}' => :build"}
-      when "git", "ruby", "emacs", "mercurial"
+      when "git", "ruby", "mercurial"
         problem <<-EOS.undent
           Don't use #{dep} as a dependency. We allow non-Homebrew
           #{dep} installations.
@@ -311,6 +311,8 @@ class FormulaAuditor
       end
     when %r[macports/trunk]
       problem "MacPorts patches should specify a revision instead of trunk:\n#{patch.url}"
+    when %r[^https?://github\.com/.*commit.*\.patch$]
+      problem "GitHub appends a git version to patches; use .diff instead."
     end
   end
 

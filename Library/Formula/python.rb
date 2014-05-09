@@ -5,12 +5,12 @@ class Python < Formula
   head 'http://hg.python.org/cpython', :using => :hg, :branch => '2.7'
   url 'http://www.python.org/ftp/python/2.7.6/Python-2.7.6.tgz'
   sha1 '8328d9f1d55574a287df384f4931a3942f03da64'
+  revision 1
 
   bottle do
-    revision 2
-    sha1 "b04bd18f40628d0c21ad32f6805f52088967edf2" => :mavericks
-    sha1 "dd88dba83a21817b60fa6f54c06735edb1d33d55" => :mountain_lion
-    sha1 "c178c396a1a6010d000f88ae54acd26ac08ad129" => :lion
+    sha1 "bcf43a9f8f5f587a86bdc680dd735a853fa3a8a5" => :mavericks
+    sha1 "781310a1d8d0d6283c2c6c1a88674aad3ada6064" => :mountain_lion
+    sha1 "3a79b8d747f66fb000197cd9b9e0a4596f814d7e" => :lion
   end
 
   option :universal
@@ -31,13 +31,13 @@ class Python < Formula
   skip_clean 'bin/easy_install', 'bin/easy_install-2.7'
 
   resource 'setuptools' do
-    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.4.1.tar.gz'
-    sha1 '1a7bb4736d915ec140b4225245b585c14b39b8dd'
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.6.tar.gz'
+    sha1 '745cbb942f8015dbcbfd9df5cb815adb63c7b0e9'
   end
 
   resource 'pip' do
-    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.4.tar.gz'
-    sha1 '35ccb7430356186cf253615b70f8ee580610f734'
+    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.5.tar.gz'
+    sha1 'ce15871b65e412589044ee8a4029fe65bc26b894'
   end
 
   # Backported security fix for CVE-2014-1912: http://bugs.python.org/issue20246
@@ -148,6 +148,7 @@ class Python < Formula
     site_packages.mkpath
 
     # Symlink the prefix site-packages into the cellar.
+    site_packages_cellar.unlink if site_packages_cellar.exist?
     site_packages_cellar.parent.install_symlink site_packages
 
     # Write our sitecustomize.py
@@ -175,8 +176,7 @@ class Python < Formula
 
     # And now we write the distutils.cfg
     cfg = lib_cellar/"distutils/distutils.cfg"
-    cfg.delete if cfg.exist?
-    cfg.write <<-EOF.undent
+    cfg.atomic_write <<-EOF.undent
       [global]
       verbose=1
       [install]
@@ -239,7 +239,6 @@ class Python < Formula
       # http://docs.python.org/devguide/setup.html#id8 suggests to disable some Warnings.
       ENV.append_to_cflags '-Wno-unused-value'
       ENV.append_to_cflags '-Wno-empty-body'
-      ENV.append_to_cflags '-Qunused-arguments'
     end
   end
 

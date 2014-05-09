@@ -2,13 +2,13 @@ require 'formula'
 
 class Ruby < Formula
   homepage 'https://www.ruby-lang.org/'
-  url 'http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.1.tar.bz2'
-  sha256 '96aabab4dd4a2e57dd0d28052650e6fcdc8f133fa8980d9b936814b1e93f6cfc'
+  url "http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.2.tar.bz2"
+  sha256 "6948b02570cdfb89a8313675d4aa665405900e27423db408401473f30fc6e901"
 
   bottle do
-    sha1 "6663be7c87cdf15d1b8322a03d5b12c31313dfb2" => :mavericks
-    sha1 "7f160f4c936452fe3dbe754a3ca871aa3607286a" => :mountain_lion
-    sha1 "ac5e62cbfed2fa81a93f1d6ec1c43ab502b9c500" => :lion
+    sha1 "9c7a61fa34c47d0c48a23bf28a0d4c9a3f31b273" => :mavericks
+    sha1 "e9e8b27b822b331083f268ac78688e6195d5334a" => :mountain_lion
+    sha1 "ccd62b5dd83229a8dfaf57abf8c1ec131b50b17e" => :lion
   end
 
   head do
@@ -56,19 +56,22 @@ class Ruby < Formula
 
     args << "--with-opt-dir=#{paths.join(":")}"
 
+    system "./configure", *args
+    system "make"
+    system "make install"
+  end
+
+  def post_install
     # Put gem, site and vendor folders in the HOMEBREW_PREFIX
     ruby_lib = HOMEBREW_PREFIX/"lib/ruby"
     (ruby_lib/'site_ruby').mkpath
     (ruby_lib/'vendor_ruby').mkpath
     (ruby_lib/'gems').mkpath
 
+    rm_rf Dir["#{lib}/ruby/{site_ruby,vendor_ruby,gems}"]
     (lib/'ruby').install_symlink ruby_lib/'site_ruby',
                                  ruby_lib/'vendor_ruby',
                                  ruby_lib/'gems'
-
-    system "./configure", *args
-    system "make"
-    system "make install"
   end
 
   def caveats; <<-EOS.undent
