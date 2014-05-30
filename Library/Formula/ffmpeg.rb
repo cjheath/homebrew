@@ -40,7 +40,7 @@ class Ffmpeg < Formula
   depends_on 'lame' => :recommended
   depends_on 'xvid' => :recommended
 
-  depends_on :freetype => :optional
+  depends_on 'freetype' => :optional
   depends_on 'theora' => :optional
   depends_on 'libvorbis' => :optional
   depends_on 'libvpx' => :optional
@@ -109,6 +109,8 @@ class Ffmpeg < Formula
     # For 32-bit compilation under gcc 4.2, see:
     # http://trac.macports.org/ticket/20938#comment:22
     ENV.append_to_cflags "-mdynamic-no-pic" if Hardware.is_32_bit? && Hardware::CPU.intel? && ENV.compiler == :clang
+
+    ENV["GIT_DIR"] = cached_download/".git" if build.head?
 
     system "./configure", *args
 
