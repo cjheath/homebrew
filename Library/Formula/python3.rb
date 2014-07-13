@@ -55,6 +55,12 @@ class Python3 < Formula
     EOS
   end
 
+  # setuptools remembers the build flags python is built with and uses them to
+  # build packages later. Xcode-only systems need different flags.
+  def pour_bottle?
+    MacOS::CLT.installed?
+  end
+
   def install
     # Unset these so that installing pip and setuptools puts them where we want
     # and not into some other Python the user has installed.
@@ -111,9 +117,7 @@ class Python3 < Formula
     system "make", "quicktest" if build.include? "quicktest"
 
     # Any .app get a " 3" attached, so it does not conflict with python 2.x.
-    Dir.glob(prefix/"*.app").each do |app|
-      mv app, app.gsub(".app", " 3.app")
-    end
+    Dir.glob("#{prefix}/*.app") { |app| mv app, app.sub(".app", " 3.app") }
 
     # A fix, because python and python3 both want to install Python.framework
     # and therefore we can't link both into HOMEBREW_PREFIX/Frameworks
