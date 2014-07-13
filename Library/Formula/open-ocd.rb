@@ -34,6 +34,7 @@ class OpenOcd < Formula
       --enable-buspirate
       --enable-jtag_vpi
       --enable-remote-bitbang
+      --enable-stlink
     ]
 
     if build.with? "libftdi"
