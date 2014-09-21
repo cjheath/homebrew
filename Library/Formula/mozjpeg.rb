@@ -2,16 +2,16 @@ require "formula"
 
 class Mozjpeg < Formula
   homepage "https://github.com/mozilla/mozjpeg"
-  url "https://github.com/mozilla/mozjpeg/archive/v1.0.1.tar.gz"
-  sha1 "daa28d6396a66d04b92fad223b763dd306d68bd9"
+  url "https://github.com/mozilla/mozjpeg/archive/v2.1.tar.gz"
+  sha1 "07f8df93cd54adbec37869833de987eb12ce7062"
 
   head "https://github.com/mozilla/mozjpeg.git"
 
   bottle do
     cellar :any
-    sha1 "77a8c981cda61d97804d155484f7ea89a0a729b3" => :mavericks
-    sha1 "bff1e31287c8e23c91d5254b20288f93e0494e2d" => :mountain_lion
-    sha1 "2438fd34c748e6b4ff39ef9f3c66a7864b10b71c" => :lion
+    sha1 "70e71c29b055c805f1e1cad0529078d76099e728" => :mavericks
+    sha1 "afc0b5feceb012bfa03dc27528bb04c70d6195d4" => :mountain_lion
+    sha1 "6e289260bb131bb2e4da792dc926ae245e8d7665" => :lion
   end
 
   depends_on "autoconf" => :build
@@ -30,9 +30,10 @@ class Mozjpeg < Formula
   end
 
   test do
-    system "#{bin}/jpegtran", "-crop", "500x500+200+500",
+    test_jpg = HOMEBREW_LIBRARY/"Homebrew/test/fixtures/test.jpg"
+    system "#{bin}/jpegtran", "-crop", "1x1",
                               "-transpose", "-optimize",
-                              "-outfile", "test.jpg",
-                              "/System/Library/CoreServices/DefaultDesktop.jpg"
+                              "-outfile", "out.jpg",
+                              test_jpg
   end
 end

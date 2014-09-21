@@ -48,6 +48,7 @@ class Pathname
     dst = dst.to_s
 
     dst = yield(src, dst) if block_given?
+    return unless dst
 
     mkpath
 
@@ -93,13 +94,20 @@ class Pathname
     open("w", *open_args) { |f| f.write(content) }
   end
 
+  def binwrite(contents, *open_args)
+    open("wb", *open_args) { |f| f.write(contents) }
+  end unless method_defined?(:binwrite)
+
+  def binread(*open_args)
+    open("rb", *open_args) { |f| f.read }
+  end unless method_defined?(:binread)
+
   # NOTE always overwrites
   def atomic_write content
     require "tempfile"
-    tf = Tempfile.new(basename.to_s)
+    tf = Tempfile.new(basename.to_s, dirname)
     tf.binmode
     tf.write(content)
-    tf.close
 
     begin
       old_stat = stat
@@ -107,16 +115,18 @@ class Pathname
       old_stat = default_stat
     end
 
-    FileUtils.mv tf.path, self
-
     uid = Process.uid
     gid = Process.groups.delete(old_stat.gid) { Process.gid }
 
     begin
-      chown(uid, gid)
-      chmod(old_stat.mode)
+      tf.chown(uid, gid)
+      tf.chmod(old_stat.mode)
     rescue Errno::EPERM
     end
+
+    File.rename(tf.path, self)
+  ensure
+    tf.close!
   end
 
   def default_stat
@@ -401,8 +411,8 @@ class Pathname
   def abv
     out=''
     n=`find #{to_s} -type f ! -name .DS_Store | wc -l`.to_i
-    out<<"#{n} files, " if n > 1
-    out<<`/usr/bin/du -hs #{to_s} | cut -d"\t" -f1`.strip
+    out << "#{n} files, " if n > 1
+    out << `/usr/bin/du -hs #{to_s} | cut -d"\t" -f1`.strip
   end
 
   # We redefine these private methods in order to add the /o modifier to
