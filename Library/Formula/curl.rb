@@ -43,6 +43,12 @@ class Curl < Formula
       --prefix=#{prefix}
     ]
 
+    if insecure = ENV['CURLOPT_SSL_VERIFYPEER']
+      insecure = true if %w{no false}.include? insecure
+      puts "Performing INSECURE download" if insecure
+    end
+
+    args << "--insecure" if insecure
     if MacOS.version < :mountain_lion or build.with? "openssl"
       args << "--with-ssl=#{Formula["openssl"].opt_prefix}"
     else
