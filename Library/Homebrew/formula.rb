@@ -11,9 +11,11 @@ require 'install_renamed'
 require 'pkg_version'
 
 class Formula
+  # :startdoc:
   include FileUtils
   include Utils::Inreplace
   extend Enumerable
+  # :stopdoc:
 
   attr_reader :name, :path
   attr_reader :stable, :devel, :head, :active_spec
@@ -63,6 +65,18 @@ class Formula
     end
   end
 
+  def stable?
+    active_spec == stable
+  end
+
+  def devel?
+    active_spec == devel
+  end
+
+  def head?
+    active_spec == head
+  end
+
   def bottle
     Bottle.new(self, active_spec.bottle_specification) if active_spec.bottled?
   end
@@ -106,6 +120,10 @@ class Formula
     active_spec.options
   end
 
+  def deprecated_options
+    active_spec.deprecated_options
+  end
+
   def option_defined?(name)
     active_spec.option_defined?(name)
   end
@@ -137,6 +155,8 @@ class Formula
     require 'keg'
     Keg.new(installed_prefix).version
   end
+
+  # :startdoc:
 
   # The directory in the cellar that the formula is installed to.
   # This directory contains the formula's name and version.
@@ -250,6 +270,8 @@ class Formula
     false
   end
 
+  # :stopdoc:
+
   # yields self with current working directory set to the uncompressed tarball
   def brew
     validate_attributes :name, :version
@@ -315,6 +337,8 @@ class Formula
     "#<#{self.class.name}: #{path}>"
   end
 
+  # :startdoc:
+
   # Standard parameters for CMake builds.
   # Using Build Type "None" tells cmake to use our CFLAGS,etc. settings.
   # Setting it to Release would ignore our flags.
@@ -332,6 +356,8 @@ class Formula
       -Wno-dev
     ]
   end
+
+  # :stopdoc:
 
   # Deprecated
   def python(options={}, &block)
@@ -391,6 +417,13 @@ class Formula
       "Homebrew/homebrew"
     else
       "path or URL"
+    end
+  end
+
+  def print_tap_action options={}
+    if tap?
+      verb = options[:verb] || "Installing"
+      ohai "#{verb} #{name} from #{tap}"
     end
   end
 
@@ -463,12 +496,10 @@ class Formula
 
   end
 
-  # For brew-fetch and others.
   def fetch
     active_spec.fetch
   end
 
-  # For FormulaInstaller.
   def verify_download_integrity fn
     active_spec.verify_download_integrity(fn)
   end
@@ -490,7 +521,13 @@ class Formula
   def test
   end
 
+  def test_fixtures(file)
+    HOMEBREW_LIBRARY.join("Homebrew", "test", "fixtures", file)
+  end
+
   protected
+
+  # :startdoc:
 
   # Pretty titles the command and buffers stdout/stderr
   # Throws if there's an error
@@ -553,6 +590,8 @@ class Formula
       log.close
     end
   end
+
+  # :stopdoc:
 
   private
 
@@ -696,6 +735,10 @@ class Formula
 
     def option name, description=""
       specs.each { |spec| spec.option(name, description) }
+    end
+
+    def deprecated_option hash
+      specs.each { |spec| spec.deprecated_option(hash) }
     end
 
     def patch strip=:p1, src=nil, &block

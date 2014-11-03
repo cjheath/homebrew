@@ -1,6 +1,7 @@
 require "cmd/missing"
 require "formula"
 require "keg"
+require "language/python"
 require "version"
 
 class Volumes
@@ -103,23 +104,29 @@ def check_for_macgpg2
   end
 end
 
-def __check_stray_files(pattern, white_list, message)
-  files = Dir[pattern].select { |f| File.file? f and not File.symlink? f }
-  bad = files.reject {|d| white_list.key? File.basename(d) }
-  inject_file_list(bad, message) unless bad.empty?
+def __check_stray_files(dir, pattern, white_list, message)
+  return unless File.directory?(dir)
+
+  files = Dir.chdir(dir) {
+    Dir[pattern].select { |f| File.file?(f) && !File.symlink?(f) } - Dir.glob(white_list)
+  }.map { |file| File.join(dir, file) }
+
+  inject_file_list(files, message) unless files.empty?
 end
 
 def check_for_stray_dylibs
   # Dylibs which are generally OK should be added to this list,
   # with a short description of the software they come with.
-  white_list = {
-    "libfuse.2.dylib" => "MacFuse",
-    "libfuse_ino64.2.dylib" => "MacFuse",
-    "libosxfuse_i32.2.dylib" => "OSXFuse",
-    "libosxfuse_i64.2.dylib" => "OSXFuse",
-  }
+  white_list = [
+    "libfuse.2.dylib", # MacFuse
+    "libfuse_ino64.2.dylib", # MacFuse
+    "libmacfuse_i32.2.dylib", # OSXFuse MacFuse compatibility layer
+    "libmacfuse_i64.2.dylib", # OSXFuse MacFuse compatibility layer
+    "libosxfuse_i32.2.dylib", # OSXFuse
+    "libosxfuse_i64.2.dylib", # OSXFuse
+  ]
 
-  __check_stray_files '/usr/local/lib/*.dylib', white_list, <<-EOS.undent
+  __check_stray_files "/usr/local/lib", "*.dylib", white_list, <<-EOS.undent
     Unbrewed dylibs were found in /usr/local/lib.
     If you didn't put them there on purpose they could cause problems when
     building Homebrew formulae, and may need to be deleted.
@@ -131,12 +138,12 @@ end
 def check_for_stray_static_libs
   # Static libs which are generally OK should be added to this list,
   # with a short description of the software they come with.
-  white_list = {
-    "libsecurity_agent_client.a" => "OS X 10.8.2 Supplemental Update",
-    "libsecurity_agent_server.a" => "OS X 10.8.2 Supplemental Update"
-  }
+  white_list = [
+    "libsecurity_agent_client.a", # OS X 10.8.2 Supplemental Update
+    "libsecurity_agent_server.a", # OS X 10.8.2 Supplemental Update
+  ]
 
-  __check_stray_files '/usr/local/lib/*.a', white_list, <<-EOS.undent
+  __check_stray_files "/usr/local/lib", "*.a", white_list, <<-EOS.undent
     Unbrewed static libraries were found in /usr/local/lib.
     If you didn't put them there on purpose they could cause problems when
     building Homebrew formulae, and may need to be deleted.
@@ -148,11 +155,13 @@ end
 def check_for_stray_pcs
   # Package-config files which are generally OK should be added to this list,
   # with a short description of the software they come with.
-  white_list = {
-    "osxfuse.pc" => "OSXFuse",
-  }
+  white_list = [
+    "fuse.pc", # OSXFuse/MacFuse
+    "macfuse.pc", # OSXFuse MacFuse compatibility layer
+    "osxfuse.pc", # OSXFuse
+  ]
 
-  __check_stray_files '/usr/local/lib/pkgconfig/*.pc', white_list, <<-EOS.undent
+  __check_stray_files "/usr/local/lib/pkgconfig", "*.pc", white_list, <<-EOS.undent
     Unbrewed .pc files were found in /usr/local/lib/pkgconfig.
     If you didn't put them there on purpose they could cause problems when
     building Homebrew formulae, and may need to be deleted.
@@ -162,19 +171,36 @@ def check_for_stray_pcs
 end
 
 def check_for_stray_las
-  white_list = {
-    "libfuse.la" => "MacFuse",
-    "libfuse_ino64.la" => "MacFuse",
-    "libosxfuse_i32.la" => "OSXFuse",
-    "libosxfuse_i64.la" => "OSXFuse",
-  }
+  white_list = [
+    "libfuse.la", # MacFuse
+    "libfuse_ino64.la", # MacFuse
+    "libosxfuse_i32.la", # OSXFuse
+    "libosxfuse_i64.la", # OSXFuse
+  ]
 
-  __check_stray_files '/usr/local/lib/*.la', white_list, <<-EOS.undent
+  __check_stray_files "/usr/local/lib", "*.la", white_list, <<-EOS.undent
     Unbrewed .la files were found in /usr/local/lib.
     If you didn't put them there on purpose they could cause problems when
     building Homebrew formulae, and may need to be deleted.
 
     Unexpected .la files:
+  EOS
+end
+
+def check_for_stray_headers
+  white_list = [
+    "fuse.h", # MacFuse
+    "fuse/**/*.h", # MacFuse
+    "macfuse/**/*.h", # OSXFuse MacFuse compatibility layer
+    "osxfuse/**/*.h", # OSXFuse
+  ]
+
+  __check_stray_files "/usr/local/include", "**/*.h", white_list, <<-EOS.undent
+    Unbrewed header files were found in /usr/local/include.
+    If you didn't put them there on purpose they could cause problems when
+    building Homebrew formulae, and may need to be deleted.
+
+    Unexpected header files:
   EOS
 end
 
@@ -221,7 +247,8 @@ if MacOS.version >= "10.9"
   end
 
   def check_xcode_up_to_date
-    if MacOS::Xcode.installed? && MacOS::Xcode.outdated? then <<-EOS.undent
+    if MacOS::Xcode.installed? && MacOS::Xcode.outdated?
+      <<-EOS.undent
       Your Xcode (#{MacOS::Xcode.version}) is outdated
       Please update to Xcode #{MacOS::Xcode.latest_version}.
       Xcode can be updated from the App Store.
@@ -327,7 +354,11 @@ end
 def check_for_bad_install_name_tool
   return if MacOS.version < "10.9"
 
-  libs = `otool -L /usr/bin/install_name_tool`
+  libs = Pathname.new("/usr/bin/install_name_tool").dynamically_linked_libraries
+
+  # otool may not work, for example if the Xcode license hasn't been accepted yet
+  return if libs.empty?
+
   unless libs.include? "/usr/lib/libxcselect.dylib" then <<-EOS.undent
     You have an outdated version of /usr/bin/install_name_tool installed.
     This will cause binary package installations to fail.
@@ -624,21 +655,25 @@ def check_for_config_scripts
   return unless HOMEBREW_CELLAR.exist?
   real_cellar = HOMEBREW_CELLAR.realpath
 
-  config_scripts = []
+  scripts = []
 
-  whitelist = %W[/usr/bin /usr/sbin /usr/X11/bin /usr/X11R6/bin /opt/X11/bin #{HOMEBREW_PREFIX}/bin #{HOMEBREW_PREFIX}/sbin]
-  whitelist.map! { |d| d.downcase }
+  whitelist = %W[
+    /usr/bin /usr/sbin
+    /usr/X11/bin /usr/X11R6/bin /opt/X11/bin
+    #{HOMEBREW_PREFIX}/bin #{HOMEBREW_PREFIX}/sbin
+    /Applications/Server.app/Contents/ServerRoot/usr/bin
+    /Applications/Server.app/Contents/ServerRoot/usr/sbin
+  ].map(&:downcase)
 
   paths.each do |p|
-    next if whitelist.include? p.downcase
-    next if p =~ %r[^(#{real_cellar.to_s}|#{HOMEBREW_CELLAR.to_s})] if real_cellar
+    next if whitelist.include?(p.downcase) ||
+      p.start_with?(real_cellar.to_s, HOMEBREW_CELLAR.to_s) ||
+      !File.directory?(p)
 
-    configs = Dir["#{p}/*-config"]
-    # puts "#{p}\n    #{configs * ' '}" unless configs.empty?
-    config_scripts << [p, configs.map { |c| File.basename(c) }] unless configs.empty?
+    scripts += Dir.chdir(p) { Dir["*-config"] }.map { |c| File.join(p, c) }
   end
 
-  unless config_scripts.empty?
+  unless scripts.empty?
     s = <<-EOS.undent
       "config" scripts exist outside your system or Homebrew directories.
       `./configure` scripts often look for *-config scripts to determine if
@@ -651,10 +686,7 @@ def check_for_config_scripts
 
     EOS
 
-    config_scripts.each do |dir, files|
-      files.each { |fn| s << "    #{dir}/#{fn}\n" }
-    end
-    s
+    s << scripts.map { |f| "  #{f}" }.join("\n")
   end
 end
 
@@ -882,7 +914,7 @@ end
 
 def check_for_other_frameworks
   # Other frameworks that are known to cause problems when present
-  %w{expat.framework libexpat.framework}.
+  %w{expat.framework libexpat.framework libcurl.framework}.
     map{ |frmwrk| "/Library/Frameworks/#{frmwrk}" }.
     select{ |frmwrk| File.exist? frmwrk }.
     map do |frmwrk| <<-EOS.undent
@@ -1114,6 +1146,24 @@ end
       remove this environment variable.
       EOS
     end
+  end
+
+  def check_for_pth_support
+    homebrew_site_packages = Language::Python.homebrew_site_packages
+    return unless homebrew_site_packages.directory?
+    return if Language::Python.reads_brewed_pth_files? "python"
+    return unless Language::Python.in_sys_path?("python", homebrew_site_packages)
+    user_site_packages = Language::Python.user_site_packages "python"
+    <<-EOS.undent
+      Your default Python does not recognize the Homebrew site-packages
+      directory as a special site-packages directory, which means that .pth
+      files will not be followed. This means you will not be able to import
+      some modules after installing them with Homebrew, like wxpython. To fix
+      this for the current user, you can run:
+
+        mkdir -p #{user_site_packages}
+        echo 'import site; site.addsitedir("#{homebrew_site_packages}")' >> #{user_site_packages}/homebrew.pth
+    EOS
   end
 
   def all

@@ -4,16 +4,17 @@ class Netpbm < Formula
   homepage 'http://netpbm.sourceforge.net'
   # Maintainers: Look at http://netpbm.svn.sourceforge.net/viewvc/netpbm/
   # for versions and matching revisions
-  url 'svn+http://svn.code.sf.net/p/netpbm/code/advanced/', :revision => 2277
-  version '10.67.05'
+  url 'svn+http://svn.code.sf.net/p/netpbm/code/advanced/', :revision => 2294
+  version '10.68'
 
   head 'http://svn.code.sf.net/p/netpbm/code/trunk'
 
   bottle do
     cellar :any
-    sha1 "6b5d4ba6089ab5a4665c46ade6fba04fb8f99f42" => :mavericks
-    sha1 "3b4f7ba452a93956aa2fb8655d2b0066195c47d3" => :mountain_lion
-    sha1 "656e30aee6d73d7c8910d801d6c24cdaf7afe2ed" => :lion
+    revision 2
+    sha1 "1f842e7b6c2632a80401751a5975f3379af6a10e" => :yosemite
+    sha1 "b2ee77e9829b27ef530c7ebc50043e4d5bc23b8e" => :mavericks
+    sha1 "a036886a7d91d2658ac1dd76ed6bc9cc246e3ec6" => :mountain_lion
   end
 
   option :universal
@@ -44,12 +45,20 @@ class Netpbm < Formula
     ENV.deparallelize
     system "make"
     system "make", "package", "pkgdir=#{buildpath}/stage"
+
     cd 'stage' do
+      inreplace "pkgconfig_template" do |s|
+        s.gsub! "@VERSION@", File.read("VERSION").sub("Netpbm ", "").chomp
+        s.gsub! "@LINKDIR@", lib
+        s.gsub! "@INCLUDEDIR@", include
+      end
+
       prefix.install %w{ bin include lib misc }
       # do man pages explicitly; otherwise a junk file is installed in man/web
       man1.install Dir['man/man1/*.1']
       man5.install Dir['man/man5/*.5']
       lib.install Dir['link/*.a']
+      (lib/"pkgconfig").install "pkgconfig_template" => "netpbm.pc"
     end
 
     (bin/'doc.url').unlink

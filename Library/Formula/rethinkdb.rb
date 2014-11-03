@@ -2,22 +2,29 @@ require "formula"
 
 class Rethinkdb < Formula
   homepage "http://www.rethinkdb.com/"
-  url "http://download.rethinkdb.com/dist/rethinkdb-1.14.1.tgz"
-  sha1 "9e2973f263bedec1cf3b9dd9eed173967ea34062"
+  url "http://download.rethinkdb.com/dist/rethinkdb-1.15.1.tgz"
+  sha1 "8ffb3d2eb8d8b8309a663a2307eb097b5c897379"
 
   bottle do
-    sha1 "a6acb3103b6a45c7e629e5e11e8569ee70b31759" => :mavericks
-    sha1 "438114cc6fbc9c0c2435f74129b691254ae48130" => :mountain_lion
-    sha1 "a045804c66cd0d409587ca3665763d71f7733684" => :lion
+    sha1 "91ea2e7b40d2bcf72169bc747eb141091ce2752f" => :mavericks
+    sha1 "2ac7c41541fbefa9d9ea9cd1f9c40aee8b7525dc" => :mountain_lion
+    sha1 "b9a82b546675d67caa321b9fb7df039cb7f31834" => :lion
   end
 
   depends_on :macos => :lion
+  # Embeds an older V8, whose gyp still requires the full Xcode
+  # Reported upstream: https://github.com/rethinkdb/rethinkdb/issues/2581
+  depends_on :xcode => :build
   depends_on "boost" => :build
 
   fails_with :gcc do
     build 5666 # GCC 4.2.1
     cause "RethinkDB uses C++0x"
   end
+
+  # boost 1.56 compatibility
+  # https://github.com/rethinkdb/rethinkdb/issues/3044#issuecomment-55478774
+  patch :DATA
 
   def install
     args = ["--prefix=#{prefix}"]
@@ -28,6 +35,10 @@ class Rethinkdb < Formula
     # rethinkdb requires that protobuf be linked against libc++
     # but brew's protobuf is sometimes linked against libstdc++
     args += ["--fetch", "protobuf"]
+
+    # support gcc with boost 1.56
+    # https://github.com/rethinkdb/rethinkdb/issues/3044#issuecomment-55471981
+    args << "CXXFLAGS=-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES"
 
     system "./configure", *args
     system "make"
@@ -64,3 +75,17 @@ class Rethinkdb < Formula
     EOS
   end
 end
+__END__
+diff --git a/src/clustering/reactor/reactor_be_primary.cc b/src/clustering/reactor/reactor_be_primary.cc
+index 3f583fc..945f78b 100644
+--- a/src/clustering/reactor/reactor_be_primary.cc
++++ b/src/clustering/reactor/reactor_be_primary.cc
+@@ -290,7 +290,7 @@ void do_backfill(
+
+ bool check_that_we_see_our_broadcaster(const boost::optional<boost::optional<broadcaster_business_card_t> > &maybe_a_
+     guarantee(maybe_a_business_card, "Not connected to ourselves\n");
+-    return maybe_a_business_card.get();
++    return static_cast<bool>(maybe_a_business_card.get());
+ }
+
+ bool reactor_t::attempt_backfill_from_peers(directory_entry_t *directory_entry,
