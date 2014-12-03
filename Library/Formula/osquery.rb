@@ -3,17 +3,16 @@ require "formula"
 class Osquery < Formula
   homepage "http://osquery.io"
   # pull from git tag to get submodules
-  url "https://github.com/facebook/osquery.git", :tag => "1.0.3"
-  sha1 "529d9a9abc0eb282fd0e61884e2c9f0ee24eddd0"
+  url "https://github.com/facebook/osquery.git", :tag => "1.1.0"
+  revision 1
 
   bottle do
-    cellar :any
-    sha1 "2124957f09ba002ad3f4e63e2ef063bcc8065dd9" => :yosemite
-    sha1 "5220b65b3de9e766828295ba1cdb66d0a965085b" => :mavericks
+    sha1 "f1defab77ba329ecbe64da7f3b3f4812bff3e656" => :yosemite
+    sha1 "5b374d8a4bddf9058abd78a7974436815611306c" => :mavericks
   end
 
   # Build currently fails on Mountain Lion:
-  # https://github.com/facebook/osquery/issues/277
+  # https://github.com/facebook/osquery/issues/409
   # Will welcome PRs to fix this!
   depends_on :macos => :mavericks
 
@@ -34,12 +33,6 @@ class Osquery < Formula
   resource "jinja2" do
     url "https://pypi.python.org/packages/source/J/Jinja2/Jinja2-2.7.3.tar.gz"
     sha1 "25ab3881f0c1adfcf79053b58de829c5ae65d3ac"
-  end
-
-  # Fix build on mountain lion (https://github.com/facebook/osquery/issues/277)
-  patch do
-    url "https://github.com/facebook/osquery/commit/cd7454.diff"
-    sha1 "0555bef180598a8846a3aa5d27db4d3a37b5ba2e"
   end
 
   def install

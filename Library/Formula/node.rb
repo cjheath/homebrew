@@ -5,22 +5,25 @@ class Node < Formula
   homepage "http://nodejs.org/"
   url "http://nodejs.org/dist/v0.10.33/node-v0.10.33.tar.gz"
   sha256 "75dc26c33144e6d0dc91cb0d68aaf0570ed0a7e4b0c35f3a7a726b500edd081e"
+  revision 1
 
   bottle do
-    revision 6
-    sha1 "4a28432c960e5eac419d304b927c1f2c55aa2bda" => :yosemite
-    sha1 "169ef2c3d46e42f79d07c52b293f4e2a4e16eb2b" => :mavericks
-    sha1 "901b0d05921eb0fcaea3e2329d9d01792db156bc" => :mountain_lion
+    revision 9
+    sha1 "c9d4bffeae1a6996715efcde907f98bab1f7bd57" => :yosemite
+    sha1 "a75fd66670c781b0b8248c5000e652bc20dcb924" => :mavericks
+    sha1 "5db55f05590a23149b1459d522075b8b2facee79" => :mountain_lion
   end
 
-  devel do
-    url "http://nodejs.org/dist/v0.11.14/node-v0.11.14.tar.gz"
-    sha256 "ce08b0a2769bcc135ca25639c9d411a038e93e0f5f5a83000ecde9b763c4dd83"
+  head do
+    url "https://github.com/joyent/node.git", :branch => "v0.12"
+
+    depends_on "pkg-config" => :build
+    depends_on "icu4c"
   end
 
-  head "https://github.com/joyent/node.git"
+  deprecated_option "enable-debug" => "with-debug"
 
-  option "enable-debug", "Build with debugger hooks"
+  option "with-debug", "Build with debugger hooks"
   option "without-npm", "npm will not be installed"
   option "without-completion", "npm bash completion will not be installed"
 
@@ -29,20 +32,28 @@ class Node < Formula
   # Once we kill off SSLv3 in our OpenSSL consider forcing our OpenSSL
   # over Node's shipped version with --shared-openssl.
   # Would allow us quicker security fixes than Node's release schedule.
+  # See https://github.com/joyent/node/issues/3557 for prior discussion.
 
   fails_with :llvm do
     build 2326
   end
 
   resource "npm" do
-    url "https://registry.npmjs.org/npm/-/npm-2.1.6.tgz"
-    sha1 "a28e8b44f910b9ab056aa0b73c13c1f9459c9b37"
+    url "https://registry.npmjs.org/npm/-/npm-2.1.10.tgz"
+    sha1 "a571ae408ac1b5e515f6c34c033503a7bb828cb4"
   end
 
   def install
     args = %W{--prefix=#{prefix} --without-npm}
-    args << "--debug" if build.include? "enable-debug"
+    args << "--debug" if build.with? "debug"
     args << "--without-ssl2" << "--without-ssl3" if build.stable?
+
+    # This should eventually be able to use the system icu4c, but right now
+    # it expects to find this dependency using pkgconfig.
+    if build.head?
+      ENV.prepend_path "PKG_CONFIG_PATH", "#{Formula["icu4c"].opt_prefix}/lib/pkgconfig"
+      args << "--with-intl=system-icu"
+    end
 
     system "./configure", *args
     system "make", "install"
@@ -90,8 +101,8 @@ class Node < Formula
 
     if build.with? "npm"
       s += <<-EOS.undent
-        If you update npm do NOT use the npm upgrade command
-        Instead execute:
+        If you update npm itself, do NOT use the npm update command.
+        The upstream-recommended way to update npm is:
           npm install -g npm@latest
       EOS
     else

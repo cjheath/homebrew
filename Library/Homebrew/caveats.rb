@@ -7,7 +7,8 @@ class Caveats
 
   def caveats
     caveats = []
-    caveats << f.caveats if f.caveats.to_s.length > 0
+    s = f.caveats.to_s
+    caveats << s.chomp + "\n" if s.length > 0
     caveats << f.keg_only_text if f.keg_only? && f.respond_to?(:keg_only_text)
     caveats << bash_completion_caveats
     caveats << zsh_completion_caveats
@@ -107,7 +108,11 @@ class Caveats
       destination = f.plist_startup ? '/Library/LaunchDaemons' \
                                     : '~/Library/LaunchAgents'
 
-      plist_filename = f.plist_path.basename
+      plist_filename = if f.plist
+        f.plist_path.basename
+      else
+        File.basename Dir["#{keg}/*.plist"].first
+      end
       plist_link = "#{destination}/#{plist_filename}"
       plist_domain = f.plist_path.basename('.plist')
       destination_path = Pathname.new File.expand_path destination
@@ -115,11 +120,14 @@ class Caveats
 
       # we readlink because this path probably doesn't exist since caveats
       # occurs before the link step of installation
+      # Yosemite security measures mildly tighter rules:
+      # https://github.com/Homebrew/homebrew/issues/33815
       if !plist_path.file? || !plist_path.symlink?
         if f.plist_startup
           s << "To have launchd start #{f.name} at startup:"
           s << "    sudo mkdir -p #{destination}" unless destination_path.directory?
           s << "    sudo cp -fv #{f.opt_prefix}/*.plist #{destination}"
+          s << "    sudo chown root #{plist_link}"
         else
           s << "To have launchd start #{f.name} at login:"
           s << "    mkdir -p #{destination}" unless destination_path.directory?
@@ -137,6 +145,7 @@ class Caveats
           s << "To reload #{f.name} after an upgrade:"
           s << "    sudo launchctl unload #{plist_link}"
           s << "    sudo cp -fv #{f.opt_prefix}/*.plist #{destination}"
+          s << "    sudo chown root #{plist_link}"
           s << "    sudo launchctl load #{plist_link}"
       elsif Kernel.system "/bin/launchctl list #{plist_domain} &>/dev/null"
           s << "To reload #{f.name} after an upgrade:"

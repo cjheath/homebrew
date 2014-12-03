@@ -31,8 +31,8 @@ class FormulaInstaller
   attr_accessor :options
   mode_attr_accessor :show_summary_heading, :show_header
   mode_attr_accessor :build_from_source, :build_bottle, :force_bottle
-  mode_attr_accessor :ignore_deps, :only_deps, :interactive
-  mode_attr_accessor :verbose, :debug
+  mode_attr_accessor :ignore_deps, :only_deps, :interactive, :git
+  mode_attr_accessor :verbose, :debug, :quieter
 
   def initialize(formula)
     @formula = formula
@@ -43,7 +43,9 @@ class FormulaInstaller
     @build_bottle = false
     @force_bottle = false
     @interactive = false
+    @git = false
     @verbose = false
+    @quieter = false
     @debug = false
     @options = Options.new
 
@@ -199,9 +201,9 @@ class FormulaInstaller
   def check_conflicts
     return if ARGV.force?
 
-    conflicts = formula.conflicts.reject do |c|
-      keg = Formulary.factory(c.name).prefix
-      not keg.directory? && Keg.new(keg).linked?
+    conflicts = formula.conflicts.select do |c|
+      formula = Formulary.factory(c.name)
+      formula.linked_keg.exist? && formula.opt_prefix.exist?
     end
 
     raise FormulaConflictError.new(formula, conflicts) unless conflicts.empty?
@@ -352,7 +354,7 @@ class FormulaInstaller
     fi.options           |= dep.options
     fi.options           |= inherited_options
     fi.build_from_source  = build_from_source?
-    fi.verbose            = verbose? unless verbose == :quieter
+    fi.verbose            = verbose? && !quieter?
     fi.debug              = debug?
     fi.prelude
     oh1 "Installing #{formula.name} dependency: #{Tty.green}#{dep.name}#{Tty.reset}"
@@ -393,7 +395,12 @@ class FormulaInstaller
     link(keg)
     fix_install_names(keg) if OS.mac?
 
-    post_install
+    if build_bottle?
+      ohai "Not running post_install as we're building a bottle"
+      puts "You can run it manually using `brew postinstall #{formula.name}`"
+    else
+      post_install
+    end
 
     ohai "Summary" if verbose? or show_summary_heading?
     puts summary
@@ -426,11 +433,8 @@ class FormulaInstaller
       args << "--bottle-arch=#{ARGV.bottle_arch}" if ARGV.bottle_arch
     end
 
-    if interactive?
-      args << "--interactive"
-      args << "--git" if interactive == :git
-    end
-
+    args << "--git" if git?
+    args << "--interactive" if interactive?
     args << "--verbose" if verbose?
     args << "--debug" if debug?
     args << "--cc=#{ARGV.cc}" if ARGV.cc
