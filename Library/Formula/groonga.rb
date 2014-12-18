@@ -6,15 +6,13 @@ class Groonga < Formula
   sha1 "894bf426c79aaab6e3b1f19811db4634aecdc4c2"
 
   bottle do
-    sha1 "b963d47b4557559e5ff5ee87070a50926b3ad741" => :yosemite
-    sha1 "156b9672507c145fb4f9ef681fdbde07cd05f894" => :mavericks
-    sha1 "230eaaa44e35896732fd6e18c7213583fa0b5ce4" => :mountain_lion
+    revision 1
+    sha1 "d4b6e1efd8b37b8f4e39918e154c687ba0735152" => :yosemite
+    sha1 "5cc89ff268fe2ba9a9129dcb0f59c992a9e6cfaf" => :mavericks
+    sha1 "4f8bcf386795fc42f40526663597fb53b8b19a66" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
-  depends_on "libtool" => :build
-  depends_on "autoconf" => :build
-  depends_on "automake" => :build
   depends_on "pcre"
   depends_on "msgpack"
   depends_on "mecab" => :optional
@@ -32,8 +30,8 @@ class Groonga < Formula
   # fixed at: https://github.com/groonga/groonga/commit/c019cfbfbf5365c28ce727a46448aa6f77de8543
   # issue #254: https://github.com/groonga/groonga/issues/254
   # fixed at: https://github.com/groonga/groonga/commit/340085f132c640f03e32a7878f0bd31de9f74eaa
-  # issue #256: https://github.com/groonga/groonga/issues/256
-  # fixed at: https://github.com/groonga/groonga/commit/e2aa5217f0967457ae4f7edf799dbf8767400916
+  # issue #264: https://github.com/groonga/groonga/issues/264
+  # fixed at: https://github.com/groonga/groonga/commit/91207ecd816e873cdf7070ec7a1c5ae4870f7e6e
   patch :DATA
 
   def install
@@ -49,11 +47,9 @@ class Groonga < Formula
     args << "--with-mecab" if build.with? "mecab"
     args << "--with-lz4" if build.with? "lz4"
 
-    # remove autoreconf when patches are removed
-    system "autoreconf", "--force", "--install"
-
     # ZeroMQ is an optional dependency that will be auto-detected unless we disable it
     system "./configure", *args
+    system "make"
     system "make install"
   end
 end
@@ -89,16 +85,44 @@ index ab720ef..868133c 100644
  # ifndef PATH_MAX
  #  if defined(MAXPATHLEN)
  #   define PATH_MAX MAXPATHLEN
-diff --git a/vendor/onigmo/Makefile.am b/vendor/onigmo/Makefile.am
-index 03083bd..9219783 100644
---- a/vendor/onigmo/Makefile.am
-+++ b/vendor/onigmo/Makefile.am
-@@ -7,7 +7,7 @@ CONFIGURE_DEPENDENCIES =			\
- ALL_DEPEND_TARGETS = onigmo-all
- CLEAN_DEPEND_TARGETS = onigmo-clean
+diff --git a/lib/grn.h b/lib/grn.h
+index 868133c..b7f78e2 100644
+--- a/lib/grn.h
++++ b/lib/grn.h
+@@ -546,7 +546,7 @@ typedef int grn_cond;
+ #  define GRN_MKOSTEMP(template,flags,mode) mkostemp(template,flags)
+ # else /* HAVE_MKOSTEMP */
+ #  define GRN_MKOSTEMP(template,flags,mode) \
+-  (mktemp(template), GRN_OPEN((template),flags,mode))
++  (mktemp(template), GRN_OPEN((template),((flags)|O_RDWR|O_CREAT|O_EXCL),mode))
+ # endif /* HAVE_MKOSTEMP */
 
--INSTALL_DEPEND_TARGETS =
-+INSTALL_DEPEND_TARGETS = onigmo-all
- if WITH_SHARED_ONIGMO
- INSTALL_DEPEND_TARGETS += onigmo-install
- endif
+ #elif (defined(WIN32) || defined (_WIN64)) /* __GNUC__ */
+@@ -579,7 +579,7 @@ typedef int grn_cond;
+ # define GRN_BIT_SCAN_REV0(v,r) GRN_BIT_SCAN_REV(v,r)
+
+ # define GRN_MKOSTEMP(template,flags,mode) \
+-  (mktemp(template), GRN_OPEN((template),((flags)|O_BINARY),mode))
++  (mktemp(template), GRN_OPEN((template),((flags)|O_RDWR|O_CREAT),mode))
+
+ #else /* __GNUC__ */
+
+diff --git a/lib/ii.c b/lib/ii.c
+index 3e48bef..2ec4949 100644
+--- a/lib/ii.c
++++ b/lib/ii.c
+@@ -7428,13 +7428,10 @@ grn_ii_buffer_open(grn_ctx *ctx, grn_ii *ii,
+       if (ii_buffer->counters) {
+         ii_buffer->block_buf = GRN_MALLOCN(grn_id, II_BUFFER_BLOCK_SIZE);
+         if (ii_buffer->block_buf) {
+-          int open_flags = O_WRONLY|O_CREAT;
++          int open_flags = 0;
+ #ifdef WIN32
+           open_flags |= O_BINARY;
+ #endif
+-#ifdef BSD
+-          open_flags &= O_APPEND|O_DIRECT|O_SHLOCK|O_EXLOCK|O_SYNC|O_CLOEXEC;
+-#endif
+           snprintf(ii_buffer->tmpfpath, PATH_MAX,
+                    "%sXXXXXX", grn_io_path(ii->seg));
+           ii_buffer->block_buf_size = II_BUFFER_BLOCK_SIZE;

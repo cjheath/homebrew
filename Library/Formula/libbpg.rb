@@ -2,14 +2,14 @@ require "formula"
 
 class Libbpg < Formula
   homepage "http://bellard.org/bpg/"
-  url "http://bellard.org/bpg/libbpg-0.9.tar.gz"
-  sha1 "d40209384adf517c773a7a28cec0d4759051bf2c"
+  url "http://bellard.org/bpg/libbpg-0.9.3.tar.gz"
+  sha1 "02887f709458d6aca5f608ffc6416b6233465edf"
 
   bottle do
     cellar :any
-    sha1 "5ce24008a63d1362c54f63765fefbf0fd8fcd2d0" => :yosemite
-    sha1 "458ac4571970643dd81352d3a9591377c5004327" => :mavericks
-    sha1 "8b906bd6b3f1537f6805e3bbd2df84dad93bcf43" => :mountain_lion
+    sha1 "b9c507c559617a5e916343aea3a943605626eefb" => :yosemite
+    sha1 "256adcd800c53765e41b9bb302a0ff2f412a5e93" => :mavericks
+    sha1 "4947077e367879313d4fed3f9e4c95988663a664" => :mountain_lion
   end
 
   depends_on "libpng"
@@ -22,13 +22,8 @@ class Libbpg < Formula
       s.gsub! "#include <malloc.h>", "#include <malloc/malloc.h>"
     end
 
-    inreplace "Makefile" do |s|
-      s.gsub! "--gc-sections", "-dead_strip"
-      s.gsub! "LIBS:=-lrt -lm -lpthread", "LIBS:=-lm -lpthread"
-    end
-
     bin.mkpath
-    system "make", "install", "prefix=#{prefix}"
+    system "make", "install", "prefix=#{prefix}", "CONFIG_APPLE=y"
   end
 
   test do

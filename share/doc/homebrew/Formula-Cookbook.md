@@ -96,8 +96,6 @@ This creates:
 And opens it in your `$EDITOR`. It'll look like:
 
 ```ruby
-require "formula"
-
 class Foo < Formula
   url "http://example.com/foo-0.1.tar.gz"
   homepage ""
@@ -366,7 +364,7 @@ Now, please open a Pull Request (on your github repo page) for new and updated b
 
 *   One formula per commit; one commit per formula
 *   Keep merge commits out of the request
-*   If you have any merge or mixup commits, please [squash](http://www.gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html) them.
+*   If you have any merge or mixup commits, please [squash](http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html) them.
 
 If a commit touches multiple files, or isn’t one logical bug fix, or a file is touched in multiple commits, we’ll probably ask you to `rebase` and `squash` your commits. For this reason, you should avoid pushing to your `master` branch. Note, after rebase and/or squash, you'll need to push with `--force` to your remote.
 
