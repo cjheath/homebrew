@@ -1,13 +1,11 @@
-require "formula"
-
 class Syncthing < Formula
   homepage "http://syncthing.net"
-  url "https://github.com/syncthing/syncthing.git", :tag => "v0.10.12"
+  url "https://github.com/syncthing/syncthing.git", :tag => "v0.10.20"
 
   bottle do
-    sha1 "a98be854eb18c0ea59b6fdbc245682c1a5a45dc5" => :yosemite
-    sha1 "80164b9027518d4976c498dc5f4a6732b6fbe034" => :mavericks
-    sha1 "ff092a3db1058eee471b95137bd895fc92e0098d" => :mountain_lion
+    sha1 "349060dc160834541c5f01e690425c1b7b0ed4a6" => :yosemite
+    sha1 "64227b52cc5898c341be4a94bee2c0971bc0a9bd" => :mavericks
+    sha1 "87d89b03f992bc92a4ce2e5ce9a5e201ef42e8f7" => :mountain_lion
   end
 
   depends_on "go" => :build
@@ -17,7 +15,7 @@ class Syncthing < Formula
     ENV["GOPATH"] = cached_download/".gopath"
     ENV.append_path "PATH", "#{ENV["GOPATH"]}/bin"
 
-    # FIXME do this without mutating the cache!
+    # FIXTHIS: do this without mutating the cache!
     hack_dir = cached_download/".gopath/src/github.com/syncthing"
     rm_rf  hack_dir
     mkdir_p hack_dir
@@ -33,11 +31,6 @@ class Syncthing < Formula
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
       <dict>
-        <key>EnvironmentVariables</key>
-        <dict>
-          <key>STNORESTART</key>
-          <string>yes</string>
-        </dict>
         <key>KeepAlive</key>
         <true/>
         <key>Label</key>
@@ -46,9 +39,12 @@ class Syncthing < Formula
         <array>
           <string>#{opt_bin}/syncthing</string>
           <string>-no-browser</string>
+          <string>-no-restart</string>
         </array>
         <key>RunAtLoad</key>
         <true/>
+        <key>ProcessType</key>
+        <string>Background</string>
       </dict>
     </plist>
     EOS
