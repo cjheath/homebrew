@@ -64,8 +64,6 @@ class Curl < Formula
     end
 
     args << "--insecure" if insecure
-    if MacOS.version < :mountain_lion or build.with? "openssl"
-
     # cURL has a new firm desire to find ssl with PKG_CONFIG_PATH instead of using
     # "--with-ssl" any more. "when possible, set the PKG_CONFIG_PATH environment
     # variable instead of using this option". Multi-SSL choice breaks w/o using it.
