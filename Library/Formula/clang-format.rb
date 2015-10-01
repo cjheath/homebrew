@@ -1,24 +1,39 @@
 class ClangFormat < Formula
+  desc "C, C++, Obj-C, Java, JavaScript, TypeScript formatting tools and editor plugins"
   homepage "http://clang.llvm.org/docs/ClangFormat.html"
-  version "2014-12-03"
+  version "2015-07-31"
 
   bottle do
-    cellar :any
-    sha1 "109a8ffc7237fccf1c404c9333de2c4fd5a2715f" => :yosemite
-    sha1 "ee71ece0c82ef48088dcba82bd126531f5e7c9c7" => :mavericks
-    sha1 "d3ef2c3eeab0e5366ade06272e693ebf0659878c" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "d1ff454a7c7a070cdf0a80de14378b8f0a6571e9c19711e8290db6fe659947e6" => :el_capitan
+    sha256 "23f3215f23cd4bc36d9b37ee566a3482f7b70a3baa887730a83067934a300b10" => :yosemite
+    sha256 "c645415feb57129f30247ade34fc25ca17fc9e72619d52f1b93b086cca411426" => :mavericks
+    sha256 "280f1a6c6c1d7823739027582c568f32bd88ca5d96d946230e6a7bfeddd46962" => :mountain_lion
   end
 
   stable do
-    url "http://llvm.org/svn/llvm-project/llvm/tags/google/testing/2014-12-03/", :using => :svn
+    url "http://llvm.org/svn/llvm-project/llvm/tags/google/testing/2015-07-31/", :using => :svn
 
     resource "clang" do
-      url "http://llvm.org/svn/llvm-project/cfe/tags/google/testing/2014-12-03/", :using => :svn
+      url "http://llvm.org/svn/llvm-project/cfe/tags/google/testing/2015-07-31/", :using => :svn
     end
 
     resource "libcxx" do
-      url "http://llvm.org/releases/3.5.0/libcxx-3.5.0.src.tar.xz"
-      sha1 "c98beed86ae1adf9ab7132aeae8fd3b0893ea995"
+      url "http://llvm.org/releases/3.6.2/libcxx-3.6.2.src.tar.xz"
+      sha256 "52f3d452f48209c9df1792158fdbd7f3e98ed9bca8ebb51fcd524f67437c8b81"
+    end
+  end
+
+  head do
+    url "http://llvm.org/svn/llvm-project/llvm/trunk/", :using => :svn
+
+    resource "clang" do
+      url "http://llvm.org/svn/llvm-project/cfe/trunk/", :using => :svn
+    end
+
+    resource "libcxx" do
+      url "http://llvm.org/releases/3.6.2/libcxx-3.6.2.src.tar.xz"
+      sha256 "52f3d452f48209c9df1792158fdbd7f3e98ed9bca8ebb51fcd524f67437c8b81"
     end
   end
 
@@ -26,24 +41,20 @@ class ClangFormat < Formula
   depends_on "ninja" => :build
   depends_on "subversion" => :build
 
-  # It'll link to GCC's libatomic in this case so need to manually specify
-  # the dependency for runtime linking.
-  depends_on "gcc" if MacOS.version <= :mountain_lion
-
-  fails_with :clang do
-    build 503
-    cause "Host Clang must be able to find libstdc++4.7 or newer!"
-  end
-
   def install
     (buildpath/"projects/libcxx").install resource("libcxx")
     (buildpath/"tools/clang").install resource("clang")
 
     mkdir "build" do
-      system "cmake", "..", "-G", "Ninja", *std_cmake_args
+      args = std_cmake_args
+      args << "-DLLVM_ENABLE_LIBCXX=ON"
+      args << ".."
+      system "cmake", "-G", "Ninja", *args
       system "ninja", "clang-format"
       bin.install "bin/clang-format"
     end
+    bin.install "tools/clang/tools/clang-format/git-clang-format"
+    (share/"clang").install Dir["tools/clang/tools/clang-format/clang-format*"]
   end
 
   test do

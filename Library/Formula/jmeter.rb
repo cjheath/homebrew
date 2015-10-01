@@ -1,38 +1,37 @@
-require 'formula'
-
 class Jmeter < Formula
-  homepage 'http://jmeter.apache.org/'
-  url 'http://www.apache.org/dyn/closer.cgi?path=jmeter/binaries/apache-jmeter-2.12.tgz'
-  sha1 '2b3de1d1ebc4c85a1fc5da12279649d97ca45788'
+  desc "Load testing and performance measurement application"
+  homepage "https://jmeter.apache.org/"
+  url "https://www.apache.org/dyn/closer.cgi?path=jmeter/binaries/apache-jmeter-2.13.tgz"
+  sha256 "9fe33d3d6e381103d3ced2962cdef5c164a06fc58c55e247eadf5a5dbcd4d8fe"
 
   resource "jmeterplugins-standard" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.2.0.zip"
-    sha1 "1700158e5ce23748db5f59b8c5b9b608a345eef7"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.2.1.zip"
+    sha256 "196948e10762f446c00f5e5ba89e474e933d270eff4d79a842b15e8ffb8cfb87"
   end
 
   resource "serveragent" do
     url "http://jmeter-plugins.org/downloads/file/ServerAgent-2.2.1.zip"
-    sha1 "c8ee7015b10f48acf4664ec33733e0c1eb025cb7"
+    sha256 "2d5cfd6d579acfb89bf16b0cbce01c8817cba52ab99b3fca937776a72a8f95ec"
   end
 
   resource "jmeterplugins-extras" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.0.zip"
-    sha1 "abd19f4befbd2dc992cc41abbb6f8a772b2fb4d6"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.1.zip"
+    sha256 "7d19e0b7a99fdc71db93a37383202e91a73f89fab59b0a87636b4c00436b9aa0"
   end
 
   resource "jmeterplugins-extraslibs" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-1.2.0.zip"
-    sha1 "549ec55da3b7a2bcf73b9ceecd0d66c1e7675d53"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-1.2.1.zip"
+    sha256 "b32b9f96d93130250764868c5302def04c73db6466cb50c5834c0ab5c62a5557"
   end
 
   resource "jmeterplugins-webdriver" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.2.0.zip"
-    sha1 "6519c05d9cd93d1f44fc733b772f232bb4568846"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.2.1.zip"
+    sha256 "2bd0066e4c6a5e60eeb72566ea3cdb618e5c7ed02e3f3fd1b9ed1571c9a0b5ff"
   end
 
   resource "jmeterplugins-hadoop" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Hadoop-1.2.0.zip"
-    sha1 "83ce7b84349acb40c5f8f63c7bbc8f9eaf38c542"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Hadoop-1.2.1.zip"
+    sha256 "2192cab0b4ce7a07c317647ddf9c6458d2ff2587288430f6707d173c49baf4e9"
   end
 
   option "with-plugins", "add JMeterPlugins Standard, Extras, ExtrasLibs, WebDriver and Hadoop"

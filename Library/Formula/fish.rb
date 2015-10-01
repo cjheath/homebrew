@@ -1,43 +1,31 @@
-require "formula"
-
 class Fish < Formula
+  desc "User-friendly command-line shell for UNIX-like operating systems"
   homepage "http://fishshell.com"
-  url "https://github.com/fish-shell/fish-shell/releases/download/2.1.1/fish-2.1.1.tar.gz"
-  sha1 "8f97f39b92ea7dfef1f464b18e304045bf37546d"
+  url "http://fishshell.com/files/2.2.0/fish-2.2.0.tar.gz"
+  sha256 "a76339fd14ce2ec229283c53e805faac48c3e99d9e3ede9d82c0554acfc7b77a"
 
   bottle do
-    sha1 "61736de475346ff8aba971429d217b827730bc65" => :mavericks
-    sha1 "1d8d3f5656a4a9ec53d22b908581109eecfc9769" => :mountain_lion
-    sha1 "56535dfe5f9a6c4bad0b7d8e9571ab00e5a2f772" => :lion
+    sha256 "9280e5816611c7cfcdaae77eeb840f93637c102dd2a6f16c00ab68394f4e4cb3" => :el_capitan
+    sha256 "da78a022f31317da5d6be21e6090a6c3424565ee7296b0d8ddd6adae2d6737ec" => :yosemite
+    sha256 "ecb9981625135e46ef4b89fbe08014f7fa1ba9754ca8bcd83afd43996ab7a90d" => :mavericks
+    sha256 "1a87c0e5f9dcecefd1f7e68975ed49308d4ab6a81f70e81b3aecae1b827ea261" => :mountain_lion
   end
 
   head do
     url "https://github.com/fish-shell/fish-shell.git", :shallow => false
 
     depends_on "autoconf" => :build
-    # Indeed, the head build always builds documentation
+    depends_on "automake" => :build
     depends_on "doxygen" => :build
+    depends_on "libtool" => :build
   end
 
-  skip_clean "share/doc"
-
   def install
-    if build.head?
-      ENV['GIT_DIR'] = cached_download/'.git'
-      system "autoconf"
-    end
+    system "autoconf" if build.head?
     # In Homebrew's 'superenv' sed's path will be incompatible, so
     # the correct path is passed into configure here.
     system "./configure", "--prefix=#{prefix}", "SED=/usr/bin/sed"
     system "make", "install"
-  end
-
-  def post_install
-    system "pkill fishd || true"
-  end
-
-  test do
-    system "#{bin}/fish", "-c", "echo"
   end
 
   def caveats; <<-EOS.undent
@@ -46,6 +34,14 @@ class Fish < Formula
     to /etc/shells. Run:
       chsh -s #{HOMEBREW_PREFIX}/bin/fish
     to make fish your default shell.
+
+    If you are upgrading from an older version of fish, you should now run:
+      killall fishd
+    to terminate the outdated fish daemon.
     EOS
+  end
+
+  test do
+    system "#{bin}/fish", "-c", "echo"
   end
 end

@@ -1,7 +1,8 @@
 class Bibtex2html < Formula
+  desc "BibTeX to HTML converter"
   homepage "http://www.lri.fr/~filliatr/bibtex2html/"
   url "http://www.lri.fr/~filliatr/ftp/bibtex2html/bibtex2html-1.98.tar.gz"
-  sha1 "daaa082885a30dae38263614565298d4862b8331"
+  sha256 "e925a0b97bf87a14bcbda95cac269835cd5ae0173504261f2c60e3c46a8706d6"
 
   bottle do
     cellar :any
@@ -10,7 +11,7 @@ class Bibtex2html < Formula
     sha1 "32377bea1f584fedf5d2abb604a1d46e5e92ac5c" => :mountain_lion
   end
 
-  depends_on "objective-caml"
+  depends_on "ocaml"
   depends_on "hevea"
   depends_on :tex => :optional
 
@@ -37,7 +38,7 @@ class Bibtex2html < Formula
       }
     EOS
     system "#{bin}/bib2bib", "test.bib", "--remove", "pages", "-ob", "out.bib"
-    assert_not_match /pages\s*=\s*{3--4}/, File.read("out.bib")
+    assert /pages\s*=\s*{3--4}/ !~ File.read("out.bib")
     assert_match /pages\s*=\s*{3--4}/, File.read("test.bib")
   end
 end

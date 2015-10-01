@@ -1,16 +1,15 @@
-require "formula"
-
 class Nzbget < Formula
+  desc "Binary newsgrabber for nzb files"
   homepage "http://nzbget.net/"
-  url "https://downloads.sourceforge.net/project/nzbget/nzbget-stable/14.1/nzbget-14.1.tar.gz"
-  sha1 "671c0d0b554643e1b58665004c65519a330766db"
+  url "https://github.com/nzbget/nzbget/releases/download/v15.0/nzbget-15.0-src.tar.gz"
+  sha256 "3ef13f3e5917e4cda19c4fc0cd37e79967a19b4e3448c239ff24e37712a6cc0a"
 
-  head "https://nzbget.svn.sourceforge.net/svnroot/nzbget/trunk"
+  head "https://github.com/nzbget/nzbget.git"
 
   bottle do
-    sha1 "b8fa821bf43c2c5ccd2842ce0a57ba0131b150bc" => :yosemite
-    sha1 "78df733e6f5983b32dd66a391cb1c6f6b1a8570a" => :mavericks
-    sha1 "ba78b8016b214a18c80499eb3d17a4aa4a45983b" => :mountain_lion
+    sha256 "575aa6f2c1e7a0782a0d01a735641b398819eebeedb45fc79893a0d8d8a99e1a" => :yosemite
+    sha256 "4d9ba1a2d89d3f9cd2abccef3e3f3223c2e9d7a68582c1ea11eb20b0bcea37c0" => :mavericks
+    sha256 "34f2fa74cd448347f0161e7adfdcfec754b3991e5058aad826df565f55e9776d" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
@@ -27,7 +26,7 @@ class Nzbget < Formula
 
   resource "libpar2" do
     url "https://launchpad.net/libpar2/trunk/0.4/+download/libpar2-0.4.tar.gz"
-    sha1 "c4a5318edac0898dcc8b1d90668cfca2ccfe0375"
+    sha256 "316d6f0eb31eb896f5546171c2e86801aeffe5ae5e2decffc17f0018346796d4"
   end
 
   def install
@@ -47,6 +46,31 @@ class Nzbget < Formula
     ENV.j1
     system "make", "install"
     etc.install "nzbget.conf"
+  end
+
+  plist_options :manual => "nzbget"
+
+  def plist; <<-EOS.undent
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>Label</key>
+      <string>#{plist_name}</string>
+      <key>ProgramArguments</key>
+      <array>
+        <string>#{opt_bin}/nzbget</string>
+        <string>-s</string>
+        <string>-o</string>
+        <string>OutputMode=Log</string>
+      </array>
+      <key>RunAtLoad</key>
+      <true/>
+      <key>KeepAlive</key>
+      <true/>
+    </dict>
+    </plist>
+    EOS
   end
 
   test do

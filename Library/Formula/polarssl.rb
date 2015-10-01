@@ -1,64 +1,42 @@
 class Polarssl < Formula
-  homepage "https://polarssl.org/"
-  # 1.4.0 will need dependents recompiled due to breaking binary compat.
-  url "https://polarssl.org/download/polarssl-1.3.9-gpl.tgz"
-  sha256 "d3605afc28ed4b7d1d9e3142d72e42855e4a23c07c951bbb0299556b02d36755"
-  revision 1
-
-  head "https://github.com/polarssl/polarssl.git"
+  desc "Cryptographic & SSL/TLS library"
+  homepage "https://tls.mbed.org/"
+  url "https://tls.mbed.org/download/mbedtls-2.1.0-gpl.tgz"
+  sha256 "b61b5fe6aa33ed365289478ac48f1496b97eef0fb813295e534e0c2bd435dcfc"
+  head "https://github.com/ARMmbed/mbedtls.git"
 
   bottle do
-    cellar :any
-    sha1 "3664577b6d23bdbdb3e5d839431ecf0a8cbd96d4" => :yosemite
-    sha1 "14f4185da9855d6c3501bb1e3efd85939eb58cf1" => :mavericks
-    sha1 "c7e5981004ee144e00d17a2e28ff43a35f1eaeed" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "5e0c1b86cd38c7c59f0da2e9a7ffbbc775aef79f11d183f3a3315f912b247521" => :yosemite
+    sha256 "9733d55faba83d4b18c0ed5760cfe03824577545a9215d098d33f43e70d93d1d" => :mavericks
+    sha256 "77c87bc196863df7628258afdb8b0103f71254af9b3d27e3725b31aca0217205" => :mountain_lion
   end
 
   depends_on "cmake" => :build
 
-  conflicts_with "md5sha1sum", :because => "both install conflicting binaries"
-
-  # Upstream patch for CVE-2015-1182. Remove with next release.
-  # https://polarssl.org/tech-updates/security-advisories/polarssl-security-advisory-2014-04
-  patch :DATA
-
   def install
-    # Kills SSL2 Handshake & SSLv3 using upstream's recommended method.
-    # Upstream, can you make this less hacky please?
-    inreplace "include/polarssl/config.h" do |s|
-      s.gsub! "#define POLARSSL_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO", "//#define POLARSSL_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO"
-      s.gsub! "#define POLARSSL_SSL_PROTO_SSL3", "//#define POLARSSL_SSL_PROTO_SSL3"
+    # "Comment this macro to disable support for SSL 3.0"
+    inreplace "include/mbedtls/config.h" do |s|
+      s.gsub! "#define MBEDTLS_SSL_PROTO_SSL3", "//#define MBEDTLS_SSL_PROTO_SSL3"
     end
 
-    system "cmake", ".", *std_cmake_args
+    system "cmake", *std_cmake_args
     system "make"
     system "make", "install"
-    # Why does PolarSSL ship with GNU's Hello included? Let's remove that.
-    rm "#{bin}/hello"
-    # Remove the pointless example application that hooks into system OpenSSL
-    rm "#{bin}/o_p_test"
+
+    # Why does PolarSSL ship with a "Hello World" executable. Let's remove that.
+    rm_f "#{bin}/hello"
+    # Rename benchmark & selftest, which are awfully generic names.
+    mv bin/"benchmark", bin/"mbedtls-benchmark"
+    mv bin/"selftest", bin/"mbedtls-selftest"
+    # Demonstration files shouldn't be in the main bin
+    libexec.install "#{bin}/mpi_demo"
   end
 
   test do
     (testpath/"testfile.txt").write("This is a test file")
     # Don't remove the space between the checksum and filename. It will break.
-    expected_checksum = "91b7b0b1e27bfbf7bc646946f35fa972c47c2d32  testfile.txt"
-    assert_equal expected_checksum, shell_output("#{bin}/sha1sum testfile.txt").strip
+    expected_checksum = "e2d0fe1585a63ec6009c8016ff8dda8b17719a637405a4e23c0ff81339148249  testfile.txt"
+    assert_equal expected_checksum, shell_output("#{bin}/generic_sum SHA256 testfile.txt").strip
   end
 end
-
-__END__
-
-diff --git a/library/asn1parse.c b/library/asn1parse.c
-index a3a2b56..e2117bf 100644
---- a/library/asn1parse.c
-+++ b/library/asn1parse.c
-@@ -278,6 +278,8 @@ int asn1_get_sequence_of( unsigned char **p,
-             if( cur->next == NULL )
-                 return( POLARSSL_ERR_ASN1_MALLOC_FAILED );
-
-+            memset( cur->next, 0, sizeof( asn1_sequence ) );
-+
-             cur = cur->next;
-         }
-     }

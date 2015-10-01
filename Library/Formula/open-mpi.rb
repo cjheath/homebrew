@@ -1,14 +1,21 @@
-require 'formula'
-
 class OpenMpi < Formula
-  homepage 'http://www.open-mpi.org/'
-  url 'http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.bz2'
-  sha1 '88ae39850fcf0db05ac20e35dd9e4cacc75bde4d'
+  desc "High performance message passing library"
+  homepage "https://www.open-mpi.org/"
+  url "https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.0.tar.bz2"
+  sha256 "26b432ce8dcbad250a9787402f2c999ecb6c25695b00c9c6ee05a306c78b6490"
 
   bottle do
-    sha1 "a6ec98d40ab34bf2eb4dbe9223d5aa430ba749ed" => :yosemite
-    sha1 "9d7366e69787c6b331fe5473c8025d86d8b79691" => :mavericks
-    sha1 "8c8627010c9390cb72054fba3f8eea419a67bb2b" => :mountain_lion
+    sha256 "0db613a1d46fee336d4ff73fea321a258831898c75ed21fb9b7a04428488a864" => :el_capitan
+    sha256 "27b7652c76a14b6cc2587963a7b90384844cbc52e947569f24bee71697447b37" => :yosemite
+    sha256 "8db6160f29874dac3705f5c18a3cb9e62e0b36c8beaed70b72dc4aeda642d1c8" => :mavericks
+    sha256 "823851cf8e01825899d97dc1766dc1c44eb11f5cc1a3a25b60b5c087c35ec81d" => :mountain_lion
+  end
+
+  head do
+    url "https://github.com/open-mpi/ompi.git"
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
   end
 
   deprecated_option "disable-fortran" => "without-fortran"
@@ -17,11 +24,12 @@ class OpenMpi < Formula
   option "with-mpi-thread-multiple", "Enable MPI_THREAD_MULTIPLE"
   option :cxx11
 
-  conflicts_with 'mpich2', :because => 'both install mpi__ compiler wrappers'
-  conflicts_with 'lcdf-typetools', :because => 'both install same set of binaries.'
+  conflicts_with "mpich", :because => "both install mpi__ compiler wrappers"
+  conflicts_with "lcdf-typetools", :because => "both install same set of binaries."
 
+  depends_on :java => :build
   depends_on :fortran => :recommended
-  depends_on 'libevent'
+  depends_on "libevent"
 
   def install
     ENV.cxx11 if build.cxx11?
@@ -32,22 +40,26 @@ class OpenMpi < Formula
       --disable-silent-rules
       --enable-ipv6
       --with-libevent=#{Formula["libevent"].opt_prefix}
+      --with-sge
     ]
     args << "--disable-mpi-fortran" if build.without? "fortran"
     args << "--enable-mpi-thread-multiple" if build.with? "mpi-thread-multiple"
 
-    system './configure', *args
-    system 'make', 'all'
-    system 'make', 'check'
-    system 'make', 'install'
+    system "./autogen.pl" if build.head?
+    system "./configure", *args
+    system "make", "all"
+    system "make", "check"
+    system "make", "install"
 
     # If Fortran bindings were built, there will be stray `.mod` files
     # (Fortran header) in `lib` that need to be moved to `include`.
     include.install Dir["#{lib}/*.mod"]
 
-    # Move vtsetup.jar from bin to libexec.
-    libexec.install bin/'vtsetup.jar'
-    inreplace bin/'vtsetup', '$bindir/vtsetup.jar', '$prefix/libexec/vtsetup.jar'
+    if build.stable?
+      # Move vtsetup.jar from bin to libexec.
+      libexec.install bin/"vtsetup.jar"
+      inreplace bin/"vtsetup", "$bindir/vtsetup.jar", "$prefix/libexec/vtsetup.jar"
+    end
   end
 
   test do

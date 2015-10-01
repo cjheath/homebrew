@@ -1,13 +1,15 @@
 class Pgcli < Formula
+  desc "CLI for Postgres with auto-completion and syntax highlighting"
   homepage "http://pgcli.com/"
-  url "https://pypi.python.org/packages/source/p/pgcli/pgcli-0.10.2.tar.gz"
-  sha1 "c34330335e08418aba1c406ac846b37daaf21262"
+  url "https://pypi.python.org/packages/source/p/pgcli/pgcli-0.19.1.tar.gz"
+  sha256 "0d383203279be0b7fff469b55de88a4ed540290fd6b1292d64aa1f0923b76217"
 
   bottle do
     cellar :any
-    sha1 "3b215a030f7a46840d0a3f0e43a3888c0e4a54b7" => :yosemite
-    sha1 "fe811167e529ca7b87da5608d831207ea2b98000" => :mavericks
-    sha1 "5877b78ca0243107a4c1baebf635d1e5fa6ee1fb" => :mountain_lion
+    sha256 "60898118f2ece21d8dfd5fb2c68c081db4e5b81ed72cb63708dabb9d79988a1a" => :el_capitan
+    sha256 "cfb848bc7c8c55209b8610047d67b2fa21125ff68fc37b2a9cdb30ed70522ce6" => :yosemite
+    sha256 "e8cfd69a6839f114d0b25823d4484a311af1e840c859d63ba5642fcb85bad9ca" => :mavericks
+    sha256 "8a0be06ff9e0194ebd04458ac9c30de1d3b39c103e75ba33050fa06774c38d71" => :mountain_lion
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
@@ -15,53 +17,48 @@ class Pgcli < Formula
   depends_on :postgresql
 
   resource "click" do
-    url "https://pypi.python.org/packages/source/c/click/click-3.3.tar.gz"
-    sha1 "d716a932b930d71059e49465b6b42e833808369a"
+    url "https://pypi.python.org/packages/source/c/click/click-4.1.tar.gz"
+    sha256 "e339ed09f25e2145314c902a870bc959adcb25653a2bd5cc1b48d9f56edf8ed8"
+  end
+
+  resource "configobj" do
+    url "https://pypi.python.org/packages/source/c/configobj/configobj-5.0.6.tar.gz"
+    sha256 "a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902"
   end
 
   resource "prompt_toolkit" do
-    url "https://pypi.python.org/packages/source/p/prompt_toolkit/prompt_toolkit-0.25.tar.gz"
-    sha1 "c0f009bd13128c7e385ff485afd88a82bab2d986"
+    url "https://pypi.python.org/packages/source/p/prompt_toolkit/prompt_toolkit-0.45.tar.gz"
+    sha256 "553fd2b9169674adacf227ede2e056c2bbd7181a4a3ca614960467c0720997a6"
   end
 
   resource "psycopg2" do
-    url "https://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.5.4.tar.gz"
-    sha1 "647b51a16a0aab1ead239c38aa5f695fd0159a17"
+    url "https://pypi.python.org/packages/source/p/psycopg2/psycopg2-2.6.1.tar.gz"
+    sha256 "6acf9abbbe757ef75dc2ecd9d91ba749547941abaffbe69ff2086a9e37d4904c"
   end
 
-  resource "sqlparse" do
-    url "https://pypi.python.org/packages/source/s/sqlparse/sqlparse-0.1.14.tar.gz"
-    sha1 "117db829bed1ed002717456b8d4516ed522dbd4d"
-  end
-
-  resource "pygments" do
-    url "https://pypi.python.org/packages/source/P/Pygments/Pygments-2.0.1.tar.gz"
-    sha1 "b9e9236693ccf6e86414e8578bf8874181f409de"
-  end
-
-  resource "wcwidth" do
-    url "https://pypi.python.org/packages/source/w/wcwidth/wcwidth-0.1.4.tar.gz"
-    sha1 "ecc43396717b075c13f94889a36464add873976c"
+  resource "Pygments" do
+    url "https://pypi.python.org/packages/source/P/Pygments/Pygments-2.0.2.tar.gz"
+    sha256 "7320919084e6dac8f4540638a46447a3bd730fca172afc17d2c03eed22cf4f51"
   end
 
   resource "six" do
     url "https://pypi.python.org/packages/source/s/six/six-1.9.0.tar.gz"
-    sha1 "d168e6d01f0900875c6ecebc97da72d0fda31129"
+    sha256 "e24052411fc4fbd1f672635537c3fc2330d9481b18c0317695b46259512c91d5"
   end
 
-  resource "jedi" do
-    url "https://pypi.python.org/packages/source/j/jedi/jedi-0.8.1.tar.gz"
-    sha1 "cc69ca5f4818ee29f16f08142d79c46c79ee611d"
+  resource "sqlparse" do
+    url "https://pypi.python.org/packages/source/s/sqlparse/sqlparse-0.1.14.tar.gz"
+    sha256 "e561e31853ab9f3634a1a2bd53035f9e47dfb203d56b33cc6569047ba087daf0"
   end
 
-  resource "docopt" do
-    url "https://pypi.python.org/packages/source/d/docopt/docopt-0.6.2.tar.gz"
-    sha1 "224a3ec08b56445a1bd1583aad06b00692671e04"
+  resource "wcwidth" do
+    url "https://pypi.python.org/packages/source/w/wcwidth/wcwidth-0.1.4.tar.gz"
+    sha256 "906d3123045d77027b49fe912458e1a1e1d6ca1a51558a4bd9168d143b129d2b"
   end
 
   def install
     ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python2.7/site-packages"
-    %w[click prompt_toolkit psycopg2 sqlparse pygments wcwidth six jedi docopt].each do |r|
+    %w[click prompt_toolkit psycopg2 sqlparse Pygments wcwidth six configobj].each do |r|
       resource(r).stage do
         system "python", *Language::Python.setup_install_args(libexec/"vendor")
       end

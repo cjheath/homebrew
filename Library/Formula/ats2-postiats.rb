@@ -1,15 +1,14 @@
-require "formula"
-
 class Ats2Postiats < Formula
+  desc "ATS programming language implementation"
   homepage "http://www.ats-lang.org/"
-  url "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.1.6/ATS2-Postiats-0.1.6.tgz"
-  sha1 "32f093102c8e32197dc182fc7801c5d16bdc92e5"
+  url "https://downloads.sourceforge.net/project/ats2-lang/ats2-lang/ats2-postiats-0.2.3/ATS2-Postiats-0.2.3.tgz"
+  sha256 "a2a50305ddfc8c88d475e0378a9f476887d11c0a64f381b849f2b9f1746258cd"
 
   bottle do
     cellar :any
-    sha1 "3805d6bdb7ed10e6dc06ec624e290f544fd0f7fb" => :yosemite
-    sha1 "631beaaf1a7454a3fbbbe8b11bdf02567d57c1d0" => :mavericks
-    sha1 "03ba510ac561f55cbecdc1aa5d74968b8ae2cf77" => :mountain_lion
+    sha256 "295b064f14032a4451c809c895d73b0ca21fb0644a6120ace18e54834acdfb35" => :el_capitan
+    sha256 "c3540cd3eb58b2c928bbc44b9908dc5e7e481d0c55899e7161c73f0e8ba17c1c" => :yosemite
+    sha256 "5aa63e79df1724739cf0cd4b0ae61757f3326cd25b36cc19c995d520cbcbab52" => :mavericks
   end
 
   depends_on "gmp"
@@ -34,7 +33,7 @@ class Ats2Postiats < Formula
       val _ = print ("Hello, world!\n")
       implement main0 () = ()
     EOS
-    system "#{bin}/patscc hello.dats -o hello"
+    system "#{bin}/patscc", "hello.dats", "-o", "hello"
     assert_match "Hello, world!", shell_output(testpath/"hello")
   end
 end

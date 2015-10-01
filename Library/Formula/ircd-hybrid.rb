@@ -1,20 +1,21 @@
-require "formula"
-
 class IrcdHybrid < Formula
+  desc "High-performance secure IRC server"
   homepage "http://www.ircd-hybrid.org/"
-  url "https://downloads.sourceforge.net/project/ircd-hybrid/ircd-hybrid/ircd-hybrid-8.2.1/ircd-hybrid-8.2.1.tgz"
-  sha1 "43e96d1d3e57f8d867348921a5b225011ab988b2"
+  url "https://downloads.sourceforge.net/project/ircd-hybrid/ircd-hybrid/ircd-hybrid-8.2.8/ircd-hybrid-8.2.8.tgz"
+  sha256 "651031ca86c829535ef91ff8a344c36cd5d79d2c6fb4a1c10bbd12a3b8fb2f9f"
 
   bottle do
-    sha1 "1ac5860e94fac63377994eebada838b4975e5cb2" => :yosemite
-    sha1 "d3150f7395160fc08cd665144288587360d5ee34" => :mavericks
-    sha1 "cbcbb7266548178d080fb3683e7ba8cd203265fa" => :mountain_lion
+    sha256 "0967877f3d687ece2b7dd5bf132ceadfbed5ecdf003102c17cbb8d061c8ba5c6" => :yosemite
+    sha256 "e723c57f791e6ff5dc0dd6fe7a54f782da0176ce4c750cc7ad8f6d364afaa876" => :mavericks
+    sha256 "e7753f62a75b4fa22603897487352132833b2602d790b1af1e0ab94415e751d2" => :mountain_lion
   end
 
   # ircd-hybrid needs the .la files
   skip_clean :la
 
   depends_on "openssl"
+
+  conflicts_with "ircd-irc2", :because => "both install an `ircd` binary"
 
   def install
     ENV.j1 # build system trips over itself

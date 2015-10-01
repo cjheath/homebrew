@@ -1,14 +1,15 @@
 class Libimobiledevice < Formula
+  desc "Library to communicate with iOS devices natively"
   homepage "http://www.libimobiledevice.org/"
-  url "http://www.libimobiledevice.org/downloads/libimobiledevice-1.1.7.tar.bz2"
-  sha1 "ac47ba39e7f8d8cb9379756773ece30458b93c80"
+  url "http://www.libimobiledevice.org/downloads/libimobiledevice-1.2.0.tar.bz2"
+  sha256 "786b0de0875053bf61b5531a86ae8119e320edab724fc62fe2150cc931f11037"
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "39f7ff7216e593d6afe2737ed42b30a8565060d5" => :yosemite
-    sha1 "bcdb212d83c8b863e2ac81bd560cbbb3b6268bc2" => :mavericks
-    sha1 "e288c30272a07b9dc2fce2f804a4c19d5d3971b1" => :mountain_lion
+    sha256 "db353988bbd70c57409338bba501a618e1d92e920e409ef587a870618878c18c" => :el_capitan
+    sha1 "7e4b860af3e151499c8444cd5617033dc696e228" => :yosemite
+    sha1 "9db2d736d715cc8ea6af1f3c95679679792a5c25" => :mavericks
+    sha1 "9f7786afecdd2b7ad55b92d5713dc8ade9d012fe" => :mountain_lion
   end
 
   head do
@@ -33,6 +34,6 @@ class Libimobiledevice < Formula
                           # As long as libplist builds without Cython
                           # bindings, libimobiledevice must as well.
                           "--without-cython"
-    system "make install"
+    system "make", "install"
   end
 end

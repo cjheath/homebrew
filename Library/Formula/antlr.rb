@@ -1,7 +1,8 @@
 class Antlr < Formula
+  desc "ANTLR: ANother Tool for Language Recognition"
   homepage "http://www.antlr.org/"
-  url "http://www.antlr.org/download/antlr-4.4-complete.jar"
-  sha1 "735569b1fa92a0d3f14bb5f3a3ffa713f5be4d1e"
+  url "http://www.antlr.org/download/antlr-4.5.1-complete.jar"
+  sha256 "9cff6c76bc5aafcbf51cac7f0974ae01e4f6119402e75436abbb97f8ab15c211"
 
   def install
     prefix.install "antlr-#{version}-complete.jar"

@@ -1,17 +1,16 @@
-require 'formula'
-
 class GitArchiveAll < Formula
-  homepage 'https://github.com/Kentzo/git-archive-all'
-  url 'https://github.com/Kentzo/git-archive-all/archive/1.9.tar.gz'
-  sha1 '7b5e9439e9e5dd331f36d3eb1a79d16f89488c67'
+  desc "Archive a project and its submodules"
+  homepage "https://github.com/Kentzo/git-archive-all"
+  url "https://github.com/Kentzo/git-archive-all/archive/1.12.tar.gz"
+  sha256 "d17859736aa6628d21f80ce44e35cbdca495c90f5db23ebd8a8b18b3398fcf13"
 
-  head 'https://github.com/Kentzo/git-archive-all.git'
+  head "https://github.com/Kentzo/git-archive-all.git"
 
   bottle do
-    cellar :any
-    sha1 "883e8ab977795ea4fb85ac41913e5b3b55a0f25b" => :mavericks
-    sha1 "6d7cd0e9d2ab7e9171585d6f121c1817719fc614" => :mountain_lion
-    sha1 "6833260e3badad055db6da98c6d308345c10a7d1" => :lion
+    cellar :any_skip_relocation
+    sha256 "e94bb64970d3c206d6fdc7d7c7cbb5fb4668c8e6e405a8fbca51a995ab370f04" => :el_capitan
+    sha256 "1f8d7abe64571e8275b03ae863b5510c2cf64bcb835f6f7f2a01ac359104fdde" => :yosemite
+    sha256 "a87a857cb7880642838119bf6e1b45fa4ed37bae74ed99bd5270f857e7d04b00" => :mavericks
   end
 
   def install

@@ -1,84 +1,90 @@
 class Go < Formula
+  desc "Go programming environment"
   homepage "https://golang.org"
-  # Version 1.5 is going to require version 1.4 present to bootstrap 1.4
-  # Perhaps we can use our previous bottles, ala the discussion around PyPy?
-  # https://docs.google.com/document/d/1OaatvGhEAq7VseQ9kkavxKNAfepWy2yhPUBs96FGV28
-  url "https://storage.googleapis.com/golang/go1.4.1.src.tar.gz"
-  sha1 "c7a683e8d39b835e333199d68d0c0baefcd24a68"
-  version "1.4.1"
+  url "https://storage.googleapis.com/golang/go1.5.1.src.tar.gz"
+  mirror "https://fossies.org/linux/misc/go1.5.1.src.tar.gz"
+  version "1.5.1"
+  sha256 "a889873e98d9a72ae396a9b7dd597c29dcd709cafa9097d9c4ba04cff0ec436b"
 
-  head "https://go.googlesource.com/go", :using => :git
+  head "https://github.com/golang/go.git"
 
   bottle do
-    sha1 "d4dea35b225b79bf93214a4ccc37272d5b4095b6" => :yosemite
-    sha1 "4209bab85e24002de969f1d96aaad5061bea068b" => :mavericks
-    sha1 "b4bb2d3cd8ed997536d1504ed75cb92b0497c1b9" => :mountain_lion
+    sha256 "aaebe29b5cf2bb1f57f7d81c7552be8a31e5f1fd570a74cc5b02b2a1c70d6b78" => :el_capitan
+    sha256 "416903e6db83af6e6cd894b255f4dcab2a3c3cc00e96df2fec7ec0ef3316b4fa" => :yosemite
+    sha256 "3dcba89c51ad223cc854d85a3354e2222de6925d6d8a161b68e84d1cfae3b54f" => :mavericks
+    sha256 "6dcf1ea79a81501016369c342e2f3610e6148b1d0a9831f2896fc5380ab21654" => :mountain_lion
   end
 
-  option "with-cc-all", "Build with cross-compilers and runtime support for all supported platforms"
-  option "with-cc-common", "Build with cross-compilers and runtime support for darwin, linux and windows"
   option "without-cgo", "Build without cgo"
+  option "without-godoc", "godoc will not be installed for you"
+  option "without-vet", "vet will not be installed for you"
 
-  deprecated_option "cross-compile-all" => "with-cc-all"
-  deprecated_option "cross-compile-common" => "with-cc-common"
+  resource "gotools" do
+    url "https://go.googlesource.com/tools.git",
+    :revision => "d02228d1857b9f49cd0252788516ff5584266eb6"
+  end
+
+  resource "gobootstrap" do
+    if MacOS.version > :lion
+      url "https://storage.googleapis.com/golang/go1.4.2.darwin-amd64-osx10.8.tar.gz"
+      sha256 "c2f53983fc8fe5159d811081022ebc401b8111759ce008f91193abdae82cdbc9"
+    else
+      url "https://storage.googleapis.com/golang/go1.4.2.darwin-amd64-osx10.6.tar.gz"
+      sha256 "da40e85a2c9bda9d2c29755c8b57b8d5932440ba466ca366c2a667697a62da4c"
+    end
+  end
 
   def install
-    # host platform (darwin) must come last in the targets list
-    if build.with? "cc-all"
-      targets = [
-        ["linux",   ["386", "amd64", "arm"]],
-        ["freebsd", ["386", "amd64", "arm"]],
-        ["netbsd",  ["386", "amd64", "arm"]],
-        ["openbsd", ["386", "amd64"]],
-        ["windows", ["386", "amd64"]],
-        ["dragonfly", ["386", "amd64"]],
-        ["plan9",   ["386", "amd64"]],
-        ["solaris", ["amd64"]],
-        ["darwin",  ["386", "amd64"]],
-      ]
-    elsif build.with? "cc-common"
-      targets = [
-        ["linux",   ["386", "amd64", "arm"]],
-        ["windows", ["386", "amd64"]],
-        ["darwin",  ["386", "amd64"]],
-      ]
-    else
-      targets = [["darwin", [""]]]
-    end
+    # GOROOT_FINAL must be overidden later on real Go install
+    ENV["GOROOT_FINAL"] = buildpath/"gobootstrap"
 
-    # The version check is due to:
-    # http://codereview.appspot.com/5654068
-    (buildpath/"VERSION").write("default") if build.head?
+    # build the gobootstrap toolchain Go >=1.4
+    (buildpath/"gobootstrap").install resource("gobootstrap")
+    cd "#{buildpath}/gobootstrap/src" do
+      system "./make.bash", "--no-clean"
+    end
+    # This should happen after we build the test Go, just in case
+    # the bootstrap toolchain is aware of this variable too.
+    ENV["GOROOT_BOOTSTRAP"] = ENV["GOROOT_FINAL"]
 
     cd "src" do
-      targets.each do |os, archs|
-        cgo_enabled = os == "darwin" && build.with?("cgo") ? "1" : "0"
-        archs.each do |arch|
-          ENV["GOROOT_FINAL"] = libexec
-          ENV["GOOS"]         = os
-          ENV["GOARCH"]       = arch
-          ENV["CGO_ENABLED"]  = cgo_enabled
-          system "./make.bash", "--no-clean"
-        end
-      end
+      ENV["GOROOT_FINAL"] = libexec
+      ENV["GOOS"]         = "darwin"
+      ENV["CGO_ENABLED"]  = build.with?("cgo") ? "1" : "0"
+      system "./make.bash", "--no-clean"
     end
 
     (buildpath/"pkg/obj").rmtree
-
+    rm_rf "gobootstrap" # Bootstrap not required beyond compile.
     libexec.install Dir["*"]
     bin.install_symlink Dir["#{libexec}/bin/go*"]
+
+    if build.with?("godoc") || build.with?("vet")
+      ENV.prepend_path "PATH", bin
+      ENV["GOPATH"] = buildpath
+      (buildpath/"src/golang.org/x/tools").install resource("gotools")
+
+      if build.with? "godoc"
+        cd "src/golang.org/x/tools/cmd/godoc/" do
+          system "go", "build"
+          (libexec/"bin").install "godoc"
+        end
+        bin.install_symlink libexec/"bin/godoc"
+      end
+
+      if build.with? "vet"
+        cd "src/golang.org/x/tools/cmd/vet/" do
+          system "go", "build"
+          # This is where Go puts vet natively; not in the bin.
+          (libexec/"pkg/tool/darwin_amd64/").install "vet"
+        end
+      end
+    end
   end
 
   def caveats; <<-EOS.undent
     As of go 1.2, a valid GOPATH is required to use the `go get` command:
-      http://golang.org/doc/code.html#GOPATH
-
-    `go vet` and `go doc` are now part of the go.tools sub repo:
-      http://golang.org/doc/go1.2#go_tools_godoc
-
-    To get `go vet` and `go doc` run:
-      go get golang.org/x/tools/cmd/vet
-      go get golang.org/x/tools/cmd/godoc
+      https://golang.org/doc/code.html#GOPATH
 
     You may wish to add the GOROOT-based install location to your PATH:
       export PATH=$PATH:#{opt_libexec}/bin
@@ -98,6 +104,16 @@ class Go < Formula
     # Run go fmt check for no errors then run the program.
     # This is a a bare minimum of go working as it uses fmt, build, and run.
     system "#{bin}/go", "fmt", "hello.go"
-    assert_equal "Hello World\n", `#{bin}/go run hello.go`
+    assert_equal "Hello World\n", shell_output("#{bin}/go run hello.go")
+
+    if build.with? "godoc"
+      assert File.exist?(libexec/"bin/godoc")
+      assert File.executable?(libexec/"bin/godoc")
+    end
+
+    if build.with? "vet"
+      assert File.exist?(libexec/"pkg/tool/darwin_amd64/vet")
+      assert File.executable?(libexec/"pkg/tool/darwin_amd64/vet")
+    end
   end
 end

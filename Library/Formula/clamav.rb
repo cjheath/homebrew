@@ -1,14 +1,15 @@
-require "formula"
-
 class Clamav < Formula
+  desc "Anti-virus software"
   homepage "http://www.clamav.net/"
-  url "https://downloads.sourceforge.net/clamav/clamav-0.98.5.tar.gz"
-  sha1 "5f5e45735819e3ca61610899b779172a5639f70f"
+  url "https://downloads.sourceforge.net/clamav/clamav-0.98.7.tar.gz"
+  sha256 "282417b707740de13cd8f18d4cbca9ddd181cf96b444db2cad98913a5153e272"
+  revision 1
 
   bottle do
-    sha1 "181a03aa6d5e1ebc7dd1a200a7cf0b3e574188cf" => :yosemite
-    sha1 "70333337e5f516c0e7a091a458f9cb166b805239" => :mavericks
-    sha1 "1e693ec6df51b2c8095feffce49850c32a409c35" => :mountain_lion
+    sha256 "83593e47cad8089828597d6b2bdad5e3887754144062ee84b106b709ca49ec86" => :el_capitan
+    sha256 "1407c98137cc9e4a3cf839d4a7e48349dc1fe7028e6a1f3a2bd8cee400013406" => :yosemite
+    sha256 "c100729030ac052a54d2724dd8b7ebc13f5897168be2cda7a1ee03e1abb4f48c" => :mavericks
+    sha256 "67dd99e5bf71766f35208aa20dcbb3bb6767d578b755d3ca95f1e7d5d5f7ddee" => :mountain_lion
   end
 
   head do
@@ -25,14 +26,16 @@ class Clamav < Formula
   skip_clean "share/clamav"
 
   def install
-    args = [ "--disable-dependency-tracking",
-             "--disable-silent-rules",
-             "--prefix=#{prefix}",
-             "--libdir=#{lib}",
-             "--sysconfdir=#{etc}/clamav",
-             "--disable-zlib-vcheck",
-             "--with-zlib=#{MacOS.sdk_path}/usr",
-             "--with-openssl=#{Formula["openssl"].opt_prefix}"
+    args = [
+      "--disable-dependency-tracking",
+      "--disable-silent-rules",
+      "--prefix=#{prefix}",
+      "--libdir=#{lib}",
+      "--sysconfdir=#{etc}/clamav",
+      "--disable-zlib-vcheck",
+      "--with-zlib=#{MacOS.sdk_path}/usr",
+      "--with-openssl=#{Formula["openssl"].opt_prefix}",
+      "--enable-llvm=no"
     ]
 
     args << "--with-libjson=#{Formula["json-c"].opt_prefix}" if build.with? "json-c"

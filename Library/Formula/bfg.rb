@@ -1,20 +1,14 @@
-require "formula"
-
 class Bfg < Formula
+  desc "Removes large files or passwords from Git history like git-filter-branch does, but faster."
   homepage "https://rtyley.github.io/bfg-repo-cleaner/"
-  url "https://repo1.maven.org/maven2/com/madgag/bfg/1.11.10/bfg-1.11.10.jar"
-  sha1 "c514a5649e9440e4b174ccc46faf8c38c6fb824f"
+  url "https://repo1.maven.org/maven2/com/madgag/bfg/1.12.5/bfg-1.12.5.jar"
+  sha256 "fa797cc6e5878a3b7b61104f3a3ba3d43987e2a7a9c596cb9d137c7b95e6b082"
 
-  bottle do
-    cellar :any
-    sha1 "aa138b3e29c4e1e091a34d454318a272ba7a07ef" => :yosemite
-    sha1 "b804d878d845fce21a33ae553a3e78cd7246bb70" => :mavericks
-    sha1 "b98e1cfe586b09b8d2f57cc590966cc677ffa595" => :mountain_lion
-  end
+  depends_on :java => "1.7+"
 
   def install
-    libexec.install "bfg-1.11.10.jar"
-    bin.write_jar_script libexec/"bfg-1.11.10.jar", "bfg"
+    libexec.install "bfg-1.12.5.jar"
+    bin.write_jar_script libexec/"bfg-1.12.5.jar", "bfg"
   end
 
   test do

@@ -41,10 +41,13 @@ Homebrew has the capability to add (and remove) multiple taps to your local inst
     - Formula are not deleted, they are moved here.
 
 *   [homebrew/nginx](https://github.com/Homebrew/homebrew-nginx)
-    - Feature rich Nginx tap for modules
+    - Feature rich Nginx tap for modules.
 
 *   [homebrew/binary](https://github.com/Homebrew/homebrew-binary)
     - Precompiled binary formulae.
+
+*   [homebrew/brewdler](https://github.com/Homebrew/homebrew-brewdler)
+    - A Bundler-equivalent for installing project dependencies from Homebrew.
 
 
 `brew search` looks in these main taps and as well in [Homebrew/homebrew](https://github.com/Homebrew/homebrew). So don't worry about missing stuff. We will add other taps to the search as they become well maintained and popular.
@@ -54,8 +57,8 @@ You can be added as a maintainer for one of the Homebrew organization taps and a
 
 ## Other Interesting Taps
 
-*   [larsimmisch/avr](https://github.com/larsimmisch/homebrew-avr)
-    - GNU AVR toolchain (avr-gcc etc. for Arduino hackers).
+*   [osx-cross/avr](https://github.com/osx-cross/homebrew-avr)
+    - GNU AVR toolchain (Libc, compilers and other tools for Atmel MCUs, useful for Arduino hackers and AVR programmers).
 
 *   [titanous/gnuradio](https://github.com/titanous/homebrew-gnuradio)
     -  GNU Radio and friends running on OS X.
@@ -71,6 +74,9 @@ You can be added as a maintainer for one of the Homebrew organization taps and a
 
 *   [edavis/emacs](https://github.com/edavis/homebrew-emacs)
     - A tap for Emacs packages.
+
+*   [InstantClientTap/instantclient](https://github.com/InstantClientTap/homebrew-instantclient)
+    - A tap for Oracle Instant Client. The packages need to be downloaded manually.
 
 ## Interesting Branches (aka forks)
 

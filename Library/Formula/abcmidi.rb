@@ -1,29 +1,29 @@
-require 'formula'
-
 class Abcmidi < Formula
-  homepage 'http://www.ifdo.ca/~seymour/runabc/top.html'
-  url 'http://www.ifdo.ca/~seymour/runabc/abcMIDI-2014-11-18.zip'
-  version '2014-11-18'
-  sha1 '8a4ab723c689300535f0e7eeb7c1dc50629018f3'
+  desc "Converts abc music notation files to MIDI files"
+  homepage "http://www.ifdo.ca/~seymour/runabc/top.html"
+  url "http://ifdo.ca/~seymour/runabc/abcMIDI-2015-08-06.zip"
+  version "2015-08-06"
+  sha256 "6ada64028344b5d778714bca02e41ed98a97c656aa45ea0e4a21de926502304e"
 
   bottle do
     cellar :any
-    sha1 "caa541f475f5a062989ab28ba02f0e81bfaa301a" => :yosemite
-    sha1 "5ae503fe5b1753c9c0a29a64b105c3986757d5b0" => :mavericks
-    sha1 "5d4c6bad566b33e63739a8a085d9689ac3609c20" => :mountain_lion
+    sha256 "e427b95a6b3a7d1ee12b5cd2d30bdd87f41bc77a8834fc9f15bfe4d77f22e1db" => :yosemite
+    sha256 "211c580f9941f3e3c6189c57ebb902e33bcfc54d24292de4e08f7a146d2c85e1" => :mavericks
+    sha256 "09c43c49c3a7dae429429acc2a31b0942ba540636fa598a648576e007cde988f" => :mountain_lion
   end
 
   def install
     # configure creates a "Makefile" file. A "makefile" file already exist in
     # the tarball. On case-sensitive file-systems, the "makefile" file won't
     # be overridden and will be chosen over the "Makefile" file.
-    system "rm", "makefile"
+    rm "makefile"
 
-    system "./configure", "--disable-debug", "--prefix=#{prefix}", "--mandir=#{man}"
+    system "./configure", "--disable-debug",
+                          "--prefix=#{prefix}",
+                          "--mandir=#{man}"
     # The Makefile is broken when using --prefix (value is added to path twice).
     # abcmidi author is notified (2012-06-20). In the meantime, here's a fix.
     inreplace "Makefile", "$(DESTDIR)${prefix}", "$(DESTDIR)"
-
     system "make", "install"
   end
 

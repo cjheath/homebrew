@@ -1,10 +1,9 @@
-require "formula"
-
 class SpringRoo < Formula
+  desc "Rapid application development tool for Java developers"
   homepage "http://www.springsource.org/spring-roo"
-  url "http://spring-roo-repository.springsource.org.s3.amazonaws.com/release/ROO/spring-roo-1.3.0.RELEASE.zip"
-  sha1 "bae2df35a96eff5c348bb8f00ce739572c33959e"
-  version "1.3.0"
+  url "https://s3.amazonaws.com/spring-roo-repository.springsource.org/release/ROO/spring-roo-1.3.1.RELEASE.zip"
+  sha256 "50be1c39ee56a0f2fba0109ed9326fbab018e08f9377dca3202fc8f8a4b5a784"
+  version "1.3.1"
 
   def install
     rm Dir["bin/*.bat"]

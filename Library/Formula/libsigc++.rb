@@ -1,15 +1,15 @@
-require "formula"
-
 class Libsigcxx < Formula
+  desc "Callback framework for C++"
   homepage "http://libsigc.sourceforge.net"
-  url "http://ftp.gnome.org/pub/GNOME/sources/libsigc++/2.4/libsigc++-2.4.0.tar.xz"
-  sha256 "7593d5fa9187bbad7c6868dce375ce3079a805f3f1e74236143bceb15a37cd30"
+  url "https://download.gnome.org/sources/libsigc++/2.4/libsigc++-2.4.1.tar.xz"
+  sha256 "540443492a68e77e30db8d425f3c0b1299c825bf974d9bfc31ae7efafedc19ec"
 
   bottle do
+    cellar :any
     revision 1
-    sha1 "92cf0ff33a45ef65d21897c35b27596af3839d7d" => :yosemite
-    sha1 "6d1f631fc0c08e0d1f424012c7fbc78010decf99" => :mavericks
-    sha1 "9495301790cc50a4719afeb26658a9d43e3b58dd" => :mountain_lion
+    sha256 "2432f8ce2c0da7ad738da40914362be21c354d139a35865404aa3a4afe6d5443" => :el_capitan
+    sha256 "c359344a9687379f811feef287e38eb344a18042e16194f26e40521fdf625f6b" => :yosemite
+    sha256 "258748c43eb3d2d530b382cbee57b42ad6f1cea7eab162791f113bd30f07ebd0" => :mavericks
   end
 
   option :cxx11
@@ -20,5 +20,21 @@ class Libsigcxx < Formula
     system "make"
     system "make", "check"
     system "make", "install"
+  end
+  test do
+    (testpath/"test.cpp").write <<-EOS.undent
+      #include <sigc++/sigc++.h>
+
+      void somefunction(int arg) {}
+
+      int main(int argc, char *argv[])
+      {
+         sigc::slot<void, int> sl = sigc::ptr_fun(&somefunction);
+         return 0;
+      }
+    EOS
+    system ENV.cxx, "test.cpp",
+                   "-L#{lib}", "-lsigc-2.0", "-I#{include}/sigc++-2.0", "-I#{lib}/sigc++-2.0/include", "-o", "test"
+    system "./test"
   end
 end

@@ -1,22 +1,15 @@
 class Pigz < Formula
-  homepage 'http://www.zlib.net/pigz/'
-  url 'http://www.zlib.net/pigz/pigz-2.3.1.tar.gz'
-  sha1 '2d5c9a70a6afcf1d8986890026d70c96b9346c07'
-  revision 1
+  desc "Parallel gzip"
+  homepage "http://www.zlib.net/pigz/"
+  url "http://www.zlib.net/pigz/pigz-2.3.3.tar.gz"
+  sha256 "4e8b67b432ce7907575a549f3e1cac4709781ba0f6b48afea9f59369846b509c"
 
   bottle do
-    cellar :any
-    sha1 "6eb3c6cad2d259e6a3230b9ac596a0357c54c170" => :yosemite
-    sha1 "f208f507c57ab7f32d34dc9e9d5ab7d131558d33" => :mavericks
-    sha1 "4348380310afb99b698813e76a4ba01e4d024a1a" => :mountain_lion
-  end
-
-  # avoid directory traversal vulnerability CVE-2015-1191
-  # http://www.openwall.com/lists/oss-security/2015/01/12/4
-  # https://github.com/madler/pigz/commit/fdad1406b3ec809f4954ff7cdf9e99eb18c2458f
-  patch do
-    url "https://sources.debian.net/data/main/p/pigz/2.3.1-2/debian/patches/0002-When-decompressing-with-N-or-NT-strip-any-path-from-.patch"
-    sha1 "b5f058c00ba3834f16d7842fa4fef73cbbf41aaf"
+    cellar :any_skip_relocation
+    sha256 "b69db2b8ee2df836ab5b267cd574929cbd5091be64e31bf5784521ff3b55f1be" => :el_capitan
+    sha1 "90c40dbdaa9c9722496ef7e2f73da037d8996db1" => :yosemite
+    sha1 "5a641215041ea36eb15942ceb4dfcae1cd41a0a4" => :mavericks
+    sha1 "e4a79a31ddc5a540b7fbb74bb64837522c932ee9" => :mountain_lion
   end
 
   def install

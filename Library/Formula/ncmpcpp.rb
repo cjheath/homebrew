@@ -1,13 +1,14 @@
 class Ncmpcpp < Formula
+  desc "Ncurses-based client for the Music Player Daemon"
   homepage "http://ncmpcpp.rybczak.net/"
-  url "http://ncmpcpp.rybczak.net/stable/ncmpcpp-0.6.2.tar.bz2"
-  sha1 "0e7e60d61af42f9fa543e16f06bac8d6c42d5fe9"
+  url "http://ncmpcpp.rybczak.net/stable/ncmpcpp-0.6.7.tar.bz2"
+  sha256 "08807dc515b4e093154a6e91cdd17ba64ebedcfcd7aa34d0d6eb4d4cc28a217b"
 
   bottle do
     cellar :any
-    sha1 "d83fa7fec86b69363f352f7b88d5ae26b90a6bdc" => :yosemite
-    sha1 "efd63c4b5afec557ec43202a545ab03bbf6ac488" => :mavericks
-    sha1 "8223ccaed03a7f77b7f287e49c8ea4eb1584e1d9" => :mountain_lion
+    sha256 "72cb60d16336585f1f75462fd96712aee088aa9c927ce0bf873a202e78dc5307" => :el_capitan
+    sha256 "ef74125f6a199f229f26ad4b3e3d095367bd35daff220c99f4bb78c00e7b5221" => :yosemite
+    sha256 "6a6f27e66b8ddc8dca51515032d9a36d8c660910ac3815aa16b960e9d747acb4" => :mavericks
   end
 
   head do
@@ -17,6 +18,14 @@ class Ncmpcpp < Formula
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
+
+  deprecated_option "outputs" => "with-outputs"
+  deprecated_option "visualizer" => "with-visualizer"
+  deprecated_option "clock" => "with-clock"
+
+  option "with-outputs", "Compile with mpd outputs control"
+  option "with-visualizer", "Compile with built-in visualizer"
+  option "with-clock", "Compile with optional clock tab"
 
   depends_on "pkg-config" => :build
   depends_on "libmpdclient"
@@ -30,11 +39,7 @@ class Ncmpcpp < Formula
     depends_on "taglib"
   end
 
-  depends_on "fftw" if build.include? "visualizer"
-
-  option "outputs", "Compile with mpd outputs control"
-  option "visualizer", "Compile with built-in visualizer"
-  option "clock", "Compile with optional clock tab"
+  depends_on "fftw" if build.with? "visualizer"
 
   needs :cxx11
 
@@ -42,15 +47,17 @@ class Ncmpcpp < Formula
     ENV.cxx11
     ENV.append "LDFLAGS", "-liconv"
 
-    args = ["--disable-dependency-tracking",
-            "--prefix=#{prefix}",
-            "--with-taglib",
-            "--with-curl",
-            "--enable-unicode"]
+    args = [
+      "--disable-dependency-tracking",
+      "--prefix=#{prefix}",
+      "--with-taglib",
+      "--with-curl",
+      "--enable-unicode",
+    ]
 
-    args << "--enable-outputs" if build.include? "outputs"
-    args << "--enable-visualizer" if build.include? "visualizer"
-    args << "--enable-clock" if build.include? "clock"
+    args << "--enable-outputs" if build.with? "outputs"
+    args << "--enable-visualizer" if build.with? "visualizer"
+    args << "--enable-clock" if build.with? "clock"
 
     if build.head?
       # Also runs configure

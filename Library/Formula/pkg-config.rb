@@ -1,11 +1,13 @@
 class PkgConfig < Formula
-  homepage "http://pkgconfig.freedesktop.org"
+  desc "Manage compile and link flags for libraries"
+  homepage "https://wiki.freedesktop.org/www/Software/pkg-config/"
   url "http://pkgconfig.freedesktop.org/releases/pkg-config-0.28.tar.gz"
-  mirror "http://fossies.org/linux/misc/pkg-config-0.28.tar.gz"
+  mirror "https://fossies.org/linux/misc/pkg-config-0.28.tar.gz"
   sha256 "6b6eb31c6ec4421174578652c7e141fdaae2dabad1021f420d8713206ac1f845"
 
   bottle do
     revision 2
+    sha256 "094a16229d94915e12e4277946c3b7a8fac9484e4e40d970cc0457ef5f060acd" => :el_capitan
     sha1 "e9bcac1cfab9343a9e0c6d10a70b2797310d7706" => :yosemite
     sha1 "809937fdb5faaa3170f0abfc810ff244207d8975" => :mavericks
     sha1 "a0cbbdbe64aa3ffe665f674d68db8fb6fb84f7df" => :mountain_lion

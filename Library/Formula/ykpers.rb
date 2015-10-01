@@ -1,13 +1,15 @@
 class Ykpers < Formula
-  homepage "http://yubico.github.io/yubikey-personalization/"
-  url "https://developers.yubico.com/yubikey-personalization/Releases/ykpers-1.16.2.tar.gz"
-  sha1 "cb8ae32eb2c2eca6c2c156e8f26a3576cb839c52"
+  desc "YubiKey personalization library and tool"
+  homepage "https://yubico.github.io/yubikey-personalization/"
+  url "https://developers.yubico.com/yubikey-personalization/Releases/ykpers-1.17.1.tar.gz"
+  sha256 "556baec2bbc94bae01293e64dc3873d68f880119ea5c3772737e4f3dc44f69c4"
 
   bottle do
     cellar :any
-    sha1 "0dada94f9df986ada86796f85b17b85732eb05c7" => :yosemite
-    sha1 "2bfc7c38f9ddb776b843418901566c9808f96660" => :mavericks
-    sha1 "8249521d7f21a8749160730d6cecf35837403279" => :mountain_lion
+    sha256 "c577358088046af6f85ed74ef45c59af5ca11b96b19a03e477a7b9e8499f3523" => :el_capitan
+    sha256 "523818ae289b6ed8fa96167ea031db62967593e8d1f3920da393415b941d0100" => :yosemite
+    sha256 "cd0fb40488fb33703e8f3f64eaa4a7f83867ace0981a867285cdc265a35d0860" => :mavericks
+    sha256 "1610b5e3da6e050ac855de882316a2f2be5761e05f8261fb1e779b7cb0b8d681" => :mountain_lion
   end
 
   option :universal
@@ -26,5 +28,9 @@ class Ykpers < Formula
                           "--with-backend=osx"
     system "make", "check"
     system "make", "install"
+  end
+
+  test do
+    system "#{bin}/ykinfo", "-V"
   end
 end

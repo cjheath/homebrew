@@ -1,42 +1,42 @@
-require "formula"
-
 class Chuck < Formula
+  desc "Concurrent, on-the-fly audio programming language"
   homepage "http://chuck.cs.princeton.edu/"
-  url "http://chuck.cs.princeton.edu/release/files/chuck-1.3.4.0.tgz"
-  sha1 "d32faae2cb60fc81d2716b477cf2d54bc548d9c6"
+  url "http://chuck.cs.princeton.edu/release/files/chuck-1.3.5.1.tgz"
+  sha256 "d141ca61547131edd2b29bdb88183835e4133ef09807674bfa33a4e6e09d1f53"
 
   bottle do
     cellar :any
-    sha1 "54f55280bd5b153277bd7657a8338ae03f674a08" => :yosemite
-    sha1 "54a4b27ef78e49544134fbe688a356e4e9001dfc" => :mavericks
-    sha1 "515e650f18e765e023947a2f8c75334611f0f7ed" => :mountain_lion
+    revision 1
+    sha256 "e90d7190c6f06ba2107d4f3bf85ca798840642f00c6bb1f3872cc0a05efa3b83" => :yosemite
+    sha256 "ae23a194badab407ea3489991314f295f2ec7c6942dd60f0e81925eb94333dec" => :mavericks
+    sha256 "87d6cc4e3a3b868ee1a98f2e148060ed4a69d2cd593944ebed83fe887c7cd080" => :mountain_lion
   end
 
-  # Homebrew already takes care of setting the sysroot;
-  # also lets the build work on CLT.
-  # Also fixes the version regex for 10.10+; reported to chuck-dev.
+  # Fixes OS X version detection to include 10.11 through (thinking ahead) 10.13
   patch :DATA
 
   def install
     system "make", "-C", "src", "osx"
     bin.install "src/chuck"
-    (share/"chuck").install "examples"
+    pkgshare.install "examples"
+  end
+
+  test do
+    assert_match /probe \[success\]/m, shell_output("#{bin}/chuck --probe 2>&1")
   end
 end
 
 __END__
 diff --git a/src/makefile.osx b/src/makefile.osx
-index 4531ee1..65cee97 100644
+index a2c06ba..ac95278 100644
 --- a/src/makefile.osx
 +++ b/src/makefile.osx
-@@ -1,9 +1,7 @@
+@@ -1,7 +1,7 @@
  # uncomment the following to force 32-bit compilation
  # FORCE_M32=-m32
- 
--ifneq ($(shell sw_vers -productVersion | egrep '10\.[6789](\.[0-9]+)?'),)
--SDK=$(shell xcodebuild -sdk macosx -version | grep '^Path:' | sed 's/Path: \(.*\)/\1/')
--ISYSROOT=-isysroot $(SDK)
-+ifneq ($(shell sw_vers -productVersion | egrep '10\.([6789]|1[0-9]+)(\.[0-9]+)?'),)
+
+-ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10)(\.[0-9]+)?'),)
++ifneq ($(shell sw_vers -productVersion | egrep '10\.(6|7|8|9|10|11|12|13)(\.[0-9]+)?'),)
+ SDK=$(shell xcodebuild -sdk macosx -version | grep '^Path:' | sed 's/Path: \(.*\)/\1/')
+ ISYSROOT=-isysroot $(SDK)
  LINK_EXTRAS=-F/System/Library/PrivateFrameworks \
-     -weak_framework MultitouchSupport
- else

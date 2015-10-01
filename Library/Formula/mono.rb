@@ -1,24 +1,23 @@
-require "formula"
-
 class Mono < Formula
+  desc "Cross platform, open source .NET development framework"
   homepage "http://www.mono-project.com/"
-  url "http://download.mono-project.com/sources/mono/mono-3.10.0.tar.bz2"
-  sha1 "74e43604ea48e941c39a43ebc153abee4ddba56c"
+  url "http://download.mono-project.com/sources/mono/mono-4.2.0.179.tar.bz2"
+  sha256 "fc53c825b8f1e83eaa52a681410261a5b0ac47d36ffd2b58581c476c2690933f"
 
   # xbuild requires the .exe files inside the runtime directories to
   # be executable
   skip_clean "lib/mono"
 
   bottle do
-    revision 1
-    sha1 "c2cb9253a6d3b69ed6b916bf0071a698e7c12c04" => :yosemite
-    sha1 "c1b47e3c54c6617a968405c24ced6489d50e79e1" => :mavericks
-    sha1 "ffa3cf10d50caa8bba3e8a6b9ae85964ef73be55" => :mountain_lion
+    sha256 "a3f48223279dd8b2b468511542319e25ca6c29bc266ae1affd5e06114f32640e" => :el_capitan
+    sha256 "0c18edef9deeb162ff119527a3113ee1d98b308f70d266f6f5d66619ecd12d12" => :yosemite
+    sha256 "8b70a9ae0465cbb4648ef3d7042ed8d7aab7d2eca25ae1b8f686696b37ac28aa" => :mavericks
+    sha256 "d3d9b118a27e3af2455925e83de0c44d4464660886c07fe5d21695f21471377a" => :mountain_lion
   end
 
   resource "monolite" do
-    url "http://storage.bos.xamarin.com/mono-dist-master/cb/cb33b94c853049a43222288ead1e0cb059b22783/monolite-111-latest.tar.gz"
-    sha1 "a674c47cd60786c49185fb3512410c43689be43e"
+    url "http://storage.bos.xamarin.com/mono-dist-4.2.0-release/9b/9b990f2b19b1a534925cce3ddaabb70654b76066/monolite-135-latest.tar.gz"
+    sha256 "1529edbf34ebe498d315464e1211e65531ba25c492ba678a5bb079986a784131"
   end
 
   def install
@@ -28,8 +27,11 @@ class Mono < Formula
 
     args = %W[
       --prefix=#{prefix}
+      --disable-dependency-tracking
+      --disable-silent-rules
       --enable-nls=no
     ]
+
     args << "--build=" + (MacOS.prefer_64_bit? ? "x86_64": "i686") + "-apple-darwin"
 
     system "./configure", *args
@@ -43,8 +45,7 @@ class Mono < Formula
   test do
     test_str = "Hello Homebrew"
     test_name = "hello.cs"
-    hello = testpath/test_name
-    hello.write <<-EOS.undent
+    (testpath/test_name).write <<-EOS.undent
       public class Hello1
       {
          public static void Main()
@@ -53,19 +54,17 @@ class Mono < Formula
          }
       }
     EOS
-    `#{bin}/mcs #{hello}`
-    assert $?.success?
-    output = `#{bin}/mono hello.exe`
-    assert $?.success?
-    assert_equal test_str, output.strip
+    shell_output "#{bin}/mcs #{test_name}"
+    output = shell_output "#{bin}/mono hello.exe"
+    assert_match test_str, output.strip
 
     # Tests that xbuild is able to execute lib/mono/*/mcs.exe
-    xbuild = testpath/"test.csproj"
-    xbuild.write <<-EOS.undent
+    (testpath/"test.csproj").write <<-EOS.undent
       <?xml version="1.0" encoding="utf-8"?>
       <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
         <PropertyGroup>
           <AssemblyName>HomebrewMonoTest</AssemblyName>
+          <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
         </PropertyGroup>
         <ItemGroup>
           <Compile Include="#{test_name}" />
@@ -73,8 +72,7 @@ class Mono < Formula
         <Import Project="$(MSBuildBinPath)\\Microsoft.CSharp.targets" />
       </Project>
     EOS
-    system "#{bin}/xbuild", xbuild
-    assert $?.success?
+    shell_output "#{bin}/xbuild test.csproj"
   end
 
   def caveats; <<-EOS.undent

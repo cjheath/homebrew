@@ -81,13 +81,13 @@ Formulae aren’t that complicated. [etl](https://github.com/Homebrew/homebrew/b
 
 And then [Git](https://github.com/Homebrew/homebrew/tree/master/Library/Formula/git.rb) and [flac](https://github.com/Homebrew/homebrew/tree/master/Library/Formula/flac.rb) show more advanced functionality.
 
-A more complete [cheat-sheet](https://github.com/Homebrew/homebrew/blob/master/Library/Contributions/example-formula.rb) shows almost all the stuff you can use in a Formula.
+Refer to the [Formula class API documentation](http://www.rubydoc.info/github/Homebrew/homebrew/master/frames) which shows all the stuff you can use in a Formula.
 
 ## Grab the URL
 
 All you need to make a formula is a URL to the tarball.
 
-    brew create http://example.com/foo-0.1.tar.gz
+    brew create https://example.com/foo-0.1.tar.gz
 
 This creates:
 
@@ -97,9 +97,9 @@ And opens it in your `$EDITOR`. It'll look like:
 
 ```ruby
 class Foo < Formula
-  url "http://example.com/foo-0.1.tar.gz"
+  url "https://example.com/foo-0.1.tar.gz"
   homepage ""
-  sha1 "1234567890ABCDEF1234567890ABCDEF"
+  sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
 
   # depends_on "cmake" => :build
 
@@ -119,8 +119,9 @@ end
 
 **We don’t accept formulae without homepages!**
 
-Homebrew doesn’t have a description field because the homepage is always up to date, and Homebrew is not. That’s way less maintenance for us. Try `brew home qt`.
+SSL/TLS (https) homepage is preferred, if one is available.
 
+Homebrew now has a description field (`desc`). Try and summarize this from the homepage.
 
 ## Check the build system
 
@@ -149,7 +150,7 @@ We try to not duplicate libraries and complicated tools in core Homebrew. We dup
 
 The one special exception is OpenSSL. Anything that uses OpenSSL *should* be built using Homebrew’s shipped OpenSSL and our test bot's post-install audit will warn of this when it is detected. (*Of course, there are exceptions to the exception. Not everything can be forced onto our OpenSSL)*.
 
-Because Homebrew’s OpenSSL is `keg_only` to avoid conflicting with the system sometimes formulae need to have environmental variables set or special configuration flags passed to locate our preferred OpenSSL; you can see this mechanism in the [clamav](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/clamav.rb#L28) formula. Usually this is unnecessary because when OpenSSL is specified as a dependency Homebrew temporarily prepends the $PATH with that prefix.
+Because Homebrew’s OpenSSL is `keg_only` to avoid conflicting with the system, sometimes formulae need to have environmental variables set or special configuration flags passed to locate our preferred OpenSSL; you can see this mechanism in the [clamav](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/clamav.rb#L28) formula. Usually this is unnecessary because when OpenSSL is specified as a dependency Homebrew temporarily prepends the $PATH with that prefix.
 
 Homebrew maintains a special [tap that provides other useful dupes](https://github.com/Homebrew/homebrew-dupes).
 
@@ -198,6 +199,26 @@ A Hash specifies a formula dependency with some additional information. Given a 
     depends_on "foo" => [:optional, "with-bar"]
     ```
 
+
+## Specifying other formulae as conflicts
+
+Sometimes there’s hard conflict between formulae, and it can’t be avoided or circumvented with `keg_only`.
+
+PolarSSL is a good [example](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/polarssl.rb) formula for minor conflict.
+
+PolarSSL ship and compile a "Hello World" executable. This is obviously non-essential to PolarSSL’s functionality, and conflict with the popular GNU `hello` formula would be overkill, so we just remove it.
+
+[pdftohtml](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/pdftohtml.rb) provides an example of a serious
+conflict, where both formula ship a identically-named binary that is essential to functionality, so a `conflicts_with` is preferable.
+
+As a general rule, `conflicts_with` should be a last-resort option. It’s a fairly blunt instrument.
+
+The syntax for conflict that can’t be worked around is
+
+```ruby
+conflicts_with "blueduck", :because => "yellowduck also ships a duck binary"
+```
+
 ## Formulae Revisions
 
 In Homebrew we sometimes accept formulae updates that don’t include a version bump. These include homepage changes, resource updates, new patches or fixing a security issue with a formula.
@@ -210,7 +231,7 @@ Where a dependent of a formula fails against a new version of that dependency it
 
 ## Double-check for dependencies
 
-When you already have a lot of brews installed, its easy to miss a common dependency like `glib` or `gettext`.
+When you already have a lot of brews installed, it's easy to miss a common dependency like `glib` or `gettext`.
 
 You can double-check which libraries a binary links to with the `otool` command (perhaps you need to use `xcrun otool`):
 
@@ -228,7 +249,7 @@ You can double-check which libraries a binary links to with the `otool` command 
 	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1213.0.0)
 
 
-## Specifying gems, Python modules etc. as dependencies
+## Specifying gems, Python modules, Go projects, etc. as dependencies
 
 Homebrew doesn’t package already packaged language-specific libraries. These should be installed directly from `gem`/`cpan`/`pip` etc.
 
@@ -238,7 +259,7 @@ If you're installing an application then please locally vendor all the language-
 class Foo < Formula
   resource "pycrypto" do
     url "https://pypi.python.org/packages/source/p/pycrypto/pycrypto-2.6.tar.gz"
-    sha1 "c17e41a80b3fbf2ee4e8f2d8bb9e28c5d08bbb84"
+    sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
   end
 
   def install
@@ -247,9 +268,11 @@ class Foo < Formula
 end
 ```
 
-See [jrnl](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/jrnl.rb) for an example of a formula that does this well. The end-result means the user doesn't have to faff with `pip` or Python and can just run `jrnl`.
+[jrnl](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/jrnl.rb) is an example of a formula that does this well. The end result means the user doesn't have to faff with `pip` or Python and can just run `jrnl`.
 
-[This script](https://raw.githubusercontent.com/tdsmith/labmisc/master/mkpydeps) can help you generate resource stanzas for the dependencies of your Python application.
+[homebrew-pypi-poet](https://github.com/tdsmith/homebrew-pypi-poet) can help you generate resource stanzas for the dependencies of your Python application.
+
+Similarly, [homebrew-go-resources](https://github.com/samertm/homebrew-go-resources) can help you generate go\_resource stanzas for the dependencies of your go application.
 
 If your formula needs a gem or python module and it can't be made into a resource you’ll need to check for these external dependencies:
 
@@ -320,8 +343,12 @@ Add aliases by creating symlinks in `Library/Aliases`.
 
 ## Audit the formula
 
-You can run `brew audit` to test formulae for adherence to Homebrew house style. This includes warnings for trailing whitespace, preferred URLs for certain source hosts, and a lot of other style issues. Fixing these warnings before committing will make the process a lot smoother for us.
+You can run `brew audit` to test formulae for adherence to Homebrew house style. The audit command includes warnings for trailing whitespace, preferred URLs for certain source hosts, and a lot of other style issues. Fixing these warnings before committing will make the process a lot smoother for us.
 
+New formulae being submitted to Homebrew should run `brew audit <formula name> --strict --online`. This command is performed by the Brew Test Bot on new submissions as part of the automated build and test process, and highlights more potential issues than the standard audit.
+
+Use `brew info` and check if the version guessed by Homebrew from the URL is
+correct. Add an explicit `version` if not.
 
 ## Commit
 
@@ -342,7 +369,7 @@ The established standard for Git commit messages is:
 * two (2) newlines, then
 * explain the commit throughly
 
-At Homebrew, we like to put the name of the formula upfront like so "foobar 7.3 (new formula)".
+At Homebrew, we like to put the name of the formula up front like so: "foobar 7.3 (new formula)".
 This may seem crazy short, but you’ll find that forcing yourself to summarise the commit encourages you to be atomic and concise. If you can’t summarise it in 50-80 characters, you’re probably trying to commit two commits as one. For a more thorough explanation, please read Tim Pope’s excellent blog post, [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).
 
 The preferred commit message format for simple version updates is "foobar 7.3".
@@ -356,11 +383,11 @@ Now you just need to push back to GitHub.
 
 If you haven’t forked Homebrew yet, [go to the repo and hit the fork button](https://github.com/Homebrew/homebrew).
 
-If you have already forked Homebrew on Github, then you can manually push (just make sure you have been pulling from the Homebrew/homebrew master):
+If you have already forked Homebrew on GitHub, then you can manually push (just make sure you have been pulling from the Homebrew/homebrew master):
 
     git push git@github.com:myname/homebrew.git <what-you-called-your-branch>
 
-Now, please open a Pull Request (on your github repo page) for new and updated brews.
+Now, please open a Pull Request (on your GitHub repo page) for new and updated brews.
 
 *   One formula per commit; one commit per formula
 *   Keep merge commits out of the request
@@ -457,7 +484,7 @@ External patches can be declared using resource-style blocks:
 ```rb
 patch do
   url "https://example.com/example_patch.diff"
-  sha1 "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+  sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
 end
 ```
 
@@ -466,7 +493,7 @@ A strip level of -p1 is assumed. It can be overridden using a symbol argument:
 ```rb
 patch :p0 do
   url "https://example.com/example_patch.diff"
-  sha1 "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+  sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
 end
 ```
 
@@ -478,7 +505,7 @@ stable do
 
   patch do
     url "https://example.com/example_patch.diff"
-    sha1 "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
   end
 end
 ```
@@ -545,13 +572,14 @@ end
 
 Homebrew understands `git`, `svn`, and `hg` URLs, and has a way to specify `cvs` repositories as a URL as well. You can test whether the `HEAD` is being built with `build.head?`.
 
-To use a specific commit, tag, or branch from a repository, specify head with the `:revision`, `:tag`, or `:branch` option, like so:
+To use a specific commit, tag, or branch from a repository, specify head with the `:tag` and `:revision`, `:revision`, or `:branch` option, like so:
 
 ```ruby
 class Foo < Formula
   head "https://github.com/some/package.git", :revision => "090930930295adslfknsdfsdaffnasd13"
                                          # or :branch => "develop"
-                                         # or :tag => "1_0_release"
+                                         # or :tag => "1_0_release",
+                                         #    :revision => "090930930295adslfknsdfsdaffnasd13"
 end
 ```
 
@@ -564,7 +592,7 @@ The "devel" spec (activated by passing `--devel`) is used for a project’s unst
 ```ruby
 devel do
   url "https://foo.com/foo-0.1.tar.gz"
-  sha1 "deadbeefdeadbeefdeadbeafdeadbeefdeadbeef"
+  sha256 "85cc828a96735bdafcf29eb6291ca91bac846579bcef7308536e0c875d6c81d7"
 end
 ```
 
@@ -572,7 +600,7 @@ You can test if the "devel" spec is in use with `build.devel?`.
 
 ## Compiler selection
 
-Sometimes a package fails to build when using a certain compiler. Since recent XCode no longer includes a GCC compiler, we cannot simply force the use of GCC. Instead, the correct way to declare this is the `fails_with` DSL method. A properly constructed `fails_with` block documents the latest compiler build version known to cause compilation to fail, and the cause of the failure. For example:
+Sometimes a package fails to build when using a certain compiler. Since recent Xcode no longer includes a GCC compiler, we cannot simply force the use of GCC. Instead, the correct way to declare this is the `fails_with` DSL method. A properly constructed `fails_with` block documents the latest compiler build version known to cause compilation to fail, and the cause of the failure. For example:
 
 ```ruby
 fails_with :llvm do
@@ -596,11 +624,11 @@ end
 To use one of Homebrew’s built-in download strategies, specify the `:using =>` flag on a `url` or `head`.  For example:
 
 ```ruby
-class Sip < Formula
-  url "http://www.riverbankcomputing.co.uk/hg/sip/archive/4.11"
-  md5 "dbafd7101a4e7caee6f529912a1356e5"
-  head "http://www.riverbankcomputing.co.uk/hg/sip", :using => :hg
-  homepage "http://www.riverbankcomputing.co.uk/software/sip"
+class Python3 < Formula
+  homepage "https://www.python.org/"
+  url "https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tar.xz"
+  sha256 "b5b3963533768d5fc325a4d7a6bd6f666726002d696f1d399ec06b043ea996b8"
+  head "https://hg.python.org/cpython", :using => :hg
 ```
 
 The downloaders offered by Homebrew are:
@@ -766,6 +794,11 @@ Generally we'd rather you were specific about what files or directories need to 
       <td><code>/usr/local/Cellar/foo/0.1/share</code></td>
     </tr>
     <tr>
+      <th><code>pkgshare</code></th>
+      <td><code>#{prefix}/share/foo</code></td>
+      <td><code>/usr/local/Cellar/foo/0.1/share/foo</code></td>
+    </tr>
+    <tr>
       <th><code>etc</code></th>
       <td><code>#{HOMEBREW_PREFIX}/etc</code></td>
       <td><code>/usr/local/etc</code></td>
@@ -821,6 +854,7 @@ class Yourformula < Formula
   ...
   option "with-ham", "Description of the option"
   option "without-spam", "Another description"
+
   depends_on "foo" => :optional  # will automatically add a with-foo option
   ...
 ```
@@ -835,17 +869,11 @@ end
 if build.without? "ham"
   # works as you'd expect. True if `--without-ham` was given.
 end
-
-if build.include? "enable-ham"
-  # the deprecated style, only useful for options other than `with`/`without` style
-end
 ```
 
-Option names should be prefixed with one of the words `with`, `without`, `no`, or a verb in the imperative tense describing the action to be taken. For example, an option to run a test suite should be named `--with-test` or `--with-check` rather than `--test`, and an option to enable a shared library should be named `--enable-shared` rather than `--shared`.
+Option names should be prefixed with the words `with` or `without`. For example, an option to run a test suite should be named `--with-test` or `--with-check` rather than `--test`, and an option to enable a shared library `--with-shared` rather than `--shared` or `--enable-shared`.
 
 Note that options that aren’t ` build.with? ` or ` build.without? ` should be actively deprecated where possible. See [wget](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/wget.rb#L27-L31) for an example.
-
-See the [graphviz](https://github.com/Homebrew/homebrew/blob/master/Library/Formula/graphviz.rb) formula for an example.
 
 
 ## File level operations
@@ -876,7 +904,7 @@ Homebrew provides two Formula methods for launchd plist files. `plist_name` will
 
 ## Updating formulae
 
-Eventually a new version of the software will be released. In this case you should update the `url` and `sha1`/`sha256`. Please leave the `bottle do ... end`  block as-is; our CI system will update it when we pull your change.
+Eventually a new version of the software will be released. In this case you should update the `url` and `sha256`. Please leave the `bottle do ... end`  block as-is; our CI system will update it when we pull your change.
 
 Check if the formula you are updating is a dependency for any other formulae by running `brew uses UPDATED_FORMULA`. If it is a dependency please `brew reinstall` all the dependencies after it is installed and verify they work correctly.
 
