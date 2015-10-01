@@ -1,40 +1,37 @@
-require 'formula'
-
 class Moreutils < Formula
-  homepage 'http://packages.debian.org/unstable/utils/moreutils'
-  url 'http://mirrors.kernel.org/debian/pool/main/m/moreutils/moreutils_0.51.tar.gz'
-  mirror 'http://ftp.us.debian.org/debian/pool/main/m/moreutils/moreutils_0.51.tar.gz'
-  sha1 '374b8c3bea962bbcde4a8158051c570a1fec6811'
+  desc "Collection of tools that nobody wrote when UNIX was young"
+  homepage "https://joeyh.name/code/moreutils/"
+  url "https://mirrors.kernel.org/debian/pool/main/m/moreutils/moreutils_0.57.orig.tar.gz"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/m/moreutils/moreutils_0.57.orig.tar.gz"
+  sha256 "3a7d54b0634e5eda8c3c43490d47cea189156700892dea6d876867cef9bc0d1d"
+
+  head "git://git.kitenet.net/moreutils"
 
   bottle do
-    revision 1
-    sha1 "45325b7fe093276eb3b5634f8fa4d023e93ae9d6" => :mavericks
-    sha1 "4e1b3ec11ff2fc9de2e0a8eeeaf89193199dc275" => :mountain_lion
-    sha1 "7f3dbe0f6487d829201076705952aad171b9cbaa" => :lion
+    cellar :any_skip_relocation
+    sha256 "5475ea829217bd88b5a9bd1a0b71615dccd092aeaddec2b499fc725c58b48074" => :el_capitan
+    sha256 "abbe3897f14ef314900fb165e76de97bd7a948cded5b26f3c2471f50adfd2f11" => :yosemite
+    sha256 "ec107c6a7c081c5e990c9b79eb3fde8cb6c9ac4e8e0c52de8f751b624927861a" => :mavericks
+    sha256 "d506ebb771c12c334e5597bb57b751c3ad738ca38aaf5cb00f88b7b25f6a776c" => :mountain_lion
   end
+
+  option "without-parallel", "Build without the 'parallel' tool."
 
   depends_on "docbook-xsl" => :build
 
-  option "without-parallel", "Omit the 'parallel' tool. Allows installation of GNU parallel from 'parallel' formula."
-
-  if build.with? "parallel"
-    conflicts_with "parallel",
-      :because => "both install a 'parallel' executable. See the '--without-parallel' option"
-  end
-
-  conflicts_with 'task-spooler',
-    :because => "both install a 'ts' executable."
+  conflicts_with "parallel", :because => "Both install a 'parallel' executable."
+  conflicts_with "task-spooler", :because => "Both install a 'ts' executable."
 
   resource "Time::Duration" do
     url "http://search.cpan.org/CPAN/authors/id/A/AV/AVIF/Time-Duration-1.1.tar.gz"
-    mirror "http://search.mcpan.org/CPAN/authors/id/A/AV/AVIF/Time-Duration-1.1.tar.gz"
-    sha1 "5acc5013d8b4ab52416555e1f08546a8d8a3fb41"
+    mirror "https://cpan.metacpan.org/authors/id/A/AV/AVIF/Time-Duration-1.1.tar.gz"
+    sha256 "a69c419c4892f21eba10002e2ab8c55b657b6691cf6873544ef99ef5fd188f4e"
   end
 
   resource "IPC::Run" do
     url "http://search.cpan.org/CPAN/authors/id/T/TO/TODDR/IPC-Run-0.92.tar.gz"
-    mirror "http://search.mcpan.org/CPAN/authors/id/T/TO/TODDR/IPC-Run-0.92.tar.gz"
-    sha1 "87e0c796722a85e0908bb0224326af1436d35809"
+    mirror "https://cpan.metacpan.org/authors/id/T/TO/TODDR/IPC-Run-0.92.tar.gz"
+    sha256 "e186b46ddf1577d24f11eec1ba42285963c3f71ec7ecb1ce51d6e88c729d46d2"
   end
 
   def install
@@ -61,5 +58,10 @@ class Moreutils < Formula
     system "make", "check"
     system "make", "install", "PREFIX=#{prefix}"
     bin.env_script_all_files(libexec+"bin", :PERL5LIB => ENV["PERL5LIB"])
+  end
+
+  test do
+    pipe_output("#{bin}/isutf8", "hello", 0)
+    pipe_output("#{bin}/isutf8", "\xca\xc0\xbd\xe7", 1)
   end
 end

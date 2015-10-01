@@ -1,15 +1,14 @@
-require "formula"
-
 class Admesh < Formula
+  desc "Processes triangulated solid meshes"
   homepage "https://github.com/admesh/admesh"
-  url "https://github.com/admesh/admesh/releases/download/v0.98.0/admesh-0.98.0.tar.gz"
-  sha1 "aeb5857161c077a85ec0744c1d5c4fa0c99a03a9"
+  url "https://github.com/admesh/admesh/releases/download/v0.98.2/admesh-0.98.2.tar.gz"
+  sha256 "ae34a6f42136a434ae242dcd76415dca326ecd1fe55bbd253bb56318ceee382b"
 
   bottle do
     cellar :any
-    sha1 "53d9fb0c85b39036cf59c9dc68e2844199dc666b" => :mavericks
-    sha1 "c1ab7ddc220a4ed10117cfa64d714ccef04405f2" => :mountain_lion
-    sha1 "750e1c792a8afe45e2e9a81b48a8e2846ab89fb2" => :lion
+    sha256 "f081b675e54064716a089b2af95d7b4a6ecc7c38d2e5c3f064027dc247faa758" => :yosemite
+    sha256 "3c073a473a28305ef75d0a8f32dfb0c79845f3d4ae5d277299e5ee309da62ace" => :mavericks
+    sha256 "411599b23cc2285c382de174dbddfbb6f48b687ee9364de8d4a6af1596600cd6" => :mountain_lion
   end
 
   def install

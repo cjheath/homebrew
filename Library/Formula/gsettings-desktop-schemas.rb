@@ -1,19 +1,19 @@
-require "formula"
-
 class GsettingsDesktopSchemas < Formula
-  homepage "http://ftp.gnome.org/pub/GNOME/sources/gsettings-desktop-schemas/"
-  url "http://ftp.gnome.org/pub/GNOME/sources/gsettings-desktop-schemas/3.12/gsettings-desktop-schemas-3.12.2.tar.xz"
-  sha256 "da75021e9c45a60d0a97ea3486f93444275d0ace86dbd1b97e5d09000d8c4ad1"
+  desc "GSettings schemas for desktop components"
+  homepage "https://download.gnome.org/sources/gsettings-desktop-schemas/"
+  url "https://download.gnome.org/sources/gsettings-desktop-schemas/3.18/gsettings-desktop-schemas-3.18.0.tar.xz"
+  sha256 "ba27337226a96d83f385c0ad192fdfe561c7e7882c61bb326c571be24e41eceb"
 
   bottle do
-    sha1 "02af81f7475b27301648a4b20fb4a9e16995bdc4" => :mavericks
-    sha1 "89e7f475d70629e957c0a6e1dbceb7a51a5b4efb" => :mountain_lion
-    sha1 "f9285f500be14dd9f6624c4a8765e6ffedf615d1" => :lion
+    cellar :any_skip_relocation
+    sha256 "11b19039bd89c2f8c91c9843f7aa359d760ba0fa4e49e4bd45bca0698458c662" => :el_capitan
+    sha256 "20d7eb21f495fa5f2def713fbf5cac516273f8c178c3fd1a1ba1abad894fa63e" => :yosemite
+    sha256 "3e8acc9cc698653044aa55f7f3d662cfa133487190338c8948229094774d7729" => :mavericks
   end
 
   depends_on "pkg-config" => :build
   depends_on "intltool" => :build
-  depends_on "glib" => :build # Yep, for glib-mkenums
+  depends_on "glib"
   depends_on "gobject-introspection" => :build
   depends_on "gettext"
   depends_on "libffi"
@@ -24,11 +24,23 @@ class GsettingsDesktopSchemas < Formula
                           "--prefix=#{prefix}",
                           "--disable-schemas-compile",
                           "--enable-introspection=yes"
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<-EOS.undent
+      #include <gdesktop-enums.h>
+
+      int main(int argc, char *argv[]) {
+        return 0;
+      }
+    EOS
+    system ENV.cc, "-I#{HOMEBREW_PREFIX}/include/gsettings-desktop-schemas", "test.c", "-o", "test"
+    system "./test"
   end
 
   def post_install
     # manual schema compile step
-    system Formula["glib"].opt_bin/"glib-compile-schemas", share/"glib-2.0/schemas"
+    system "#{Formula["glib"].opt_bin}/glib-compile-schemas", "#{HOMEBREW_PREFIX}/share/glib-2.0/schemas"
   end
 end
