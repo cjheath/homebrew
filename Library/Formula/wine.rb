@@ -132,6 +132,8 @@ class Wine < Formula
       # even if the rest of Wine is built with A GNU compiler.
       system 'make', 'dlls/winemac.drv/Makefile'
       inreplace 'dlls/winemac.drv/Makefile', /^CC\s*=\s*[^\s]+/, "CC = clang"
+    end
+
     # The Mac driver uses blocks and must be compiled with an Apple compiler
     # even if the rest of Wine is built with A GNU compiler.
     unless ENV.compiler == :clang || ENV.compiler == :llvm || ENV.compiler == :gcc
@@ -197,4 +199,5 @@ class Wine < Formula
     end
     s
   end
+
 end
